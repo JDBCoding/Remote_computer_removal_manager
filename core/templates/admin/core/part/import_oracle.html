@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="module">
+  <h2>{{ title }}</h2>
+
+  <p>
+    Paste up to 10 <strong>work orders</strong> (job numbers), one per line.
+    This will pull the raw DCB rows from Oracle and import any <strong>new</strong> parts.
+  </p>
+
+  <form method="post" style="margin-top: 16px;">
+    {% csrf_token %}
+    <fieldset class="module aligned">
+      {{ form.as_p }}
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Pull + Import" class="default">
+      <a href="../" class="button cancel-link">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

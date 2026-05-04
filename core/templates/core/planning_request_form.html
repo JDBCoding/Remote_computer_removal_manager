@@ -1,0 +1,91 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="text-center mb-4">
+   <h1 class="display-6 fw-bold">CREATE PLANNING REQUEST</h1>
+</div>
+<form method="post" class="mx-auto" style="max-width: 900px;">
+
+   {% csrf_token %}
+   <div class="mb-4">
+      <label class="form-label fw-bold">JOB NUMBER</label>
+      <input type="text" name="job_number" class="form-control" required>
+   </div>
+   <div class="mb-4">
+      <label class="form-label fw-bold">NOTES / SPECIAL INSTRUCTIONS</label>
+      <textarea name="notes" class="form-control" rows="3"></textarea>
+   </div>
+   <div class="mb-3">
+      <div class="fw-bold mb-2">SELECT PARTS</div>
+      <div class="mb-2">
+         <input id="partSearch" type="text" class="form-control" placeholder="Type part number or description..."
+            autocomplete="off">
+      </div>
+      <div class="list-group">
+         {% for part in parts %}
+         <div class="list-group-item part-row" data-search="{{ part.part_number }} {{ part.description }}">
+            <div class="form-check">
+               <input class="form-check-input part-check" type="checkbox" id="part_{{ part.id }}" name="parts"
+                  value="{{ part.id }}" data-opwrap="opwrap_{{ part.id }}">
+               <label class="form-check-label fw-semibold" for="part_{{ part.id }}">
+                  {{ part.part_number }} - {{ part.description }}
+               </label>
+            </div>
+            <!-- OP input: hidden unless checkbox checked -->
+            <div id="opwrap_{{ part.id }}" class="mt-2" hidden>
+               <input type="text" class="form-control form-control-sm" name="op_{{ part.id }}"
+                  placeholder="Enter OP for {{ part.part_number }}">
+            </div>
+         </div>
+
+         {% endfor %}
+      </div>
+   </div>
+   <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary px-4">
+
+         Submit Planning Request
+      </button>
+      <a class="btn btn-secondary px-4" href="{% url 'home' %}">Home</a>
+   </div>
+</form>
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+      // 1) Force-hide all OP wraps on load
+      document.querySelectorAll('[id^="opwrap_"]').forEach(function (wrap) {
+         wrap.hidden = true;
+      });
+      // 2) Wire checkbox -> show/hide its OP input
+      document.querySelectorAll(".part-check").forEach(function (cb) {
+         const wrapId = cb.getAttribute("data-opwrap");
+         const wrap = document.getElementById(wrapId);
+         if (!wrap) return;
+         const opInput = wrap.querySelector('input[type="text"]');
+         function sync() {
+            const isChecked = cb.checked;
+            wrap.hidden = !isChecked;
+            // only require OP if checked (optional)
+            if (opInput) {
+               opInput.required = isChecked;
+               if (!isChecked) opInput.value = "";
+            }
+         }
+         cb.addEventListener("change", sync);
+         sync(); // initial state
+      });
+   });
+</script>
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+      const input = document.getElementById("partSearch");
+      const rows = document.querySelectorAll(".part-row");
+      input.addEventListener("input", function () {
+         const query = this.value.toLowerCase().trim();
+         rows.forEach(row => {
+            const text = row.dataset.search.toLowerCase();
+            row.style.display = text.includes(query) ? "" : "none";
+         });
+      });
+   });
+</script>
+{% endblock %}

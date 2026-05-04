@@ -1,0 +1,22 @@
+{{% extends "core/base.html" %}
+{% block content %}
+<div class="text-center mb-4">
+<h1 class="display-6 fw-bold">PLANNING DATA COLLECTS REQUEST</h1>
+<p class="text-muted">COPY THIS MESSAGE AND PASTE INTO TEAMS OR SEND CLICK EMAIL BUTTON:</p>
+</div>
+<div class="mx-auto" style="max-width: 900px;">
+<pre class="p-3 border rounded bg-light" style="white-space: pre-wrap;">{{ planning_message }}</pre>
+<div class="d-flex gap-2 mt-3">
+<a class="btn btn-secondary px-4" href="{% url 'planning_request_create' %}">
+     Create Another
+</a>
+<a class="btn btn-primary px-4"
+      href="mailto:?subject={{ email_subject|urlencode }}&body={{ planning_message|urlencode }}">
+     Email This
+</a>
+<a class="btn btn-dark px-4" href="{% url 'home' %}">
+     Return to Home
+</a>
+</div>
+</div>
+{% endblock %}

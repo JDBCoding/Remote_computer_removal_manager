@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %} {% block content %}
+<h2>Add Installation Requirement for {{ part.part_number }}</h2>
+<form method="post">
+  {% csrf_token %} {{ formset.management_form }} {% for form in formset %}
+  <div class="mb-3">
+    {{ form.as_p }}
+    <input
+      type="checkbox"
+      name="form-{{ forloop.counter0 }}-DELETE"
+      id="id_form-{{ forloop.counter0 }}-DELETE"
+    />
+    <label for="id_form-{{ forloop.counter0 }}-DELETE">Delete</label>
+  </div>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-success">Add</button>
+  <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+{% endblock %}

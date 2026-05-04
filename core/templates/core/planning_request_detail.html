@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h2>Planning Request</h2>
+{% if request_obj.created_at %}
+<p><strong>Created:</strong> {{ request_obj.created_at }}</p>
+{% endif %}
+{% if job_number %}
+<p><strong>Job Number:</strong> {{ job_number }}</p>
+{% endif %}
+<form method="post" action="{% url 'generate_planning_message' %}">
+ {% csrf_token %}
+<div class="mb-3">
+<label class="form-label">Job Number:</label>
+<input type="text" name="job_number" value="{{ job_number }}" class="form-control" readonly>
+</div>
+<div class="mb-3">
+<label class="form-label">Notes / Special Instructions:</label>
+<textarea name="notes" class="form-control" rows="4"></textarea>
+</div>
+ {% for part in parts %}
+<div class="mb-3 p-3 border rounded bg-light">
+<p><strong>Part:</strong> {{ part.part_number }}</p>
+<p>
+<strong>DWG:</strong> {{ part.dwg }} |
+<strong>SHT:</strong> {{ part.sht }} |
+<strong>REV:</strong> {{ part.rev }}
+</p>
+<p><strong>Requirements:</strong></p>
+<ul>
+       {% for req in part.requirements.all %}
+<li>{{ req.requirement_type }}</li>
+       {% empty %}
+<li><em>No requirements</em></li>
+       {% endfor %}
+</ul>
+<input type="text" name="op_{{ part.part_number }}" class="form-control mb-2" placeholder="Enter OP for {{ part.part_number }}">
+</div>
+ {% endfor %}
+<button type="submit" class="btn btn-success mt-3">Submit Planning Request</button>
+</form>
+{% endblock %}

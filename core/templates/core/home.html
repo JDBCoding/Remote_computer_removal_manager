@@ -1,69 +1,67 @@
 {% extends 'core/base.html' %}
 {% block content %}
-
-<form method="get" class="mb-4">
-   <div class="d-flex align-items-center justify-content-between mb-2">
-      <div class="fw-semibold">
-         TOTAL REMOVALS: {{ total_parts }}
-      </div>
-   </div>
-   <div class="mb-3">
-      <label for="partSelect" class="form-label fw-bold fs-3">SELECT A PART</label>
-      <select name="part_number" id="partSelect" class="form-select" onchange="this.form.submit()">
-         <option value="">-- Choose a part --</option>
-         {% for part in parts %}
-            <option value="{{ part.part_number }}" {% if selected_part and part.part_number == selected_part.part_number %}selected{% endif %}>
-            {{ part.part_number }}: {{ part.description }}
-            </option>
-         {% endfor %}
-      </select>
-   </div>
-</form>
-<a href="{% url 'add_part' %}" class="btn btn-success mb-3">➕ Add Part</a>
-{% if selected_part %}
-<div class="card mb-4">
-   <div class="card-body">
-      <h5 class="card-title">
-         <span class="part-number">{{ selected_part.part_number }}</span>
-      </h5>
-      <div class="spec-grid">
-         <div><strong>DESCRIPTION</strong></div>
-         <div>{{ selected_part.description }}</div>
-         <div><strong>STA</strong></div>
-         <div>{{ selected_part.sta }}</div>
-         <div><strong>BL</strong></div>
-         <div>{{ selected_part.bl }}</div>
-         <div><strong>WL</strong></div>
-         <div>{{ selected_part.wl }}</div>
-      </div>
-      {% if selected_part.dwg %}
-      <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ selected_part.dwg }}"
-         target="_blank" class="link-tag">
-         {{ selected_part.dwg}}
-      </a>
-      {% else %}
-      N/A
-      {% endif %}
-      <strong>SHT:</strong> {{ selected_part.sht }} |
-      <strong>REV:</strong> {{ selected_part.rev }}</p>
-      <p><strong>Notes:</strong> {{ selected_part.notes }}</p>
-      <a href="{% url 'edit_part' selected_part.part_number %}" class="btn btn-warning btn-sm">✏️ Edit Part</a>
-      <a href="{% url 'edit_requirements' selected_part.part_number %}" class="btn btn-primary btn-sm">📋 Manage
-         Requirements</a>
-   </div>
+<section class="home-page">
+<!-- LEFT CONTROL PANEL -->
+<form method="get" id="homePartControl" class="home-control-panel">
+<div class="home-control-top">
+<div>
+<div class="home-kicker">Parts Control</div>
+<h1 class="home-title">Select a Part</h1>
 </div>
-<h4>Installation Requirements</h4>
-<ul class="list-group mb-4">
-   {% for req in requirements %}
-   <li class="list-group-item">
-      <strong>{{ req.requirement_type }}</strong>
-      {% if req.note %}
-      <br><small class="text-muted">{{ req.note }}</small>
-      {% endif %}
-   </li>
-   {% empty %}
-   <li class="list-group-item text-muted">No requirements yet.</li>
-   {% endfor %}
+</div>
+<label for="partSelect" class="home-label">Part Number</label>
+<select
+           name="part_number"
+           id="partSelect"
+           class="form-select home-part-select"
+           onchange="this.form.submit()">
+<option value="">-- Choose a part --</option>
+           {% for part in parts %}
+<option value="{{ part.part_number }}"
+                   {% if selected_part and part.part_number == selected_part.part_number %}selected{% endif %}>
+                   {{ part.part_number }}: {{ part.description }}
+</option>
+           {% endfor %}
+</select>
+<div class="home-actions">
+<a href="{% url 'add_part' %}" class="btn btn-success">+ Add Part</a>
+</div>
+</form>
+
+<!-- PART DETAILS -->
+   {% if selected_part %}
+<div class="home-detail-grid">
+<div class="card home-part-card">
+<div class="card-body">
+<h2 class="home-part-number">{{ selected_part.part_number }}</h2>
+<div class="spec-grid">
+<div><strong>Description</strong></div>
+<div>{{ selected_part.description }}</div>
+<div><strong>STA</strong></div>
+<div>{{ selected_part.sta }}</div>
+<div><strong>BL</strong></div>
+<div>{{ selected_part.bl }}</div>
+<div><strong>WL</strong></div>
+<div>{{ selected_part.wl }}</div>
+</div>
+</div>
+</div>
+<div class="card home-req-card">
+<div class="card-body">
+<h3>Installation Requirements</h3>
+<ul class="list-group">
+                   {% for req in requirements %}
+<li class="list-group-item">
+<strong>{{ req.requirement_type }}</strong><br>
+<small>{{ req.note }}</small>
+</li>
+                   {% empty %}
+<li class="list-group-item text-muted">No requirements yet.</li>
+                   {% endfor %}
 </ul>
-{% endif %}
+</div>
+</div>
+</div>
+   {% endif %}
+</section>
 {% endblock %}

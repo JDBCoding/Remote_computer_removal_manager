@@ -1,101 +1,194 @@
+:root {
+   --bg-deep: #0B0F14;
+   --steel-dark: #1A222B;
+   --steel-mid: #2F3944;
+   --steel-light: #4A5866;
+   --surface-main: #F2F0EA;
+   --surface-card: #FFFFFF;
+   --surface-soft: #E6E1D8;
+   --border-light: #C8C1B5;
+   --blue: #2F6FEB;
+   --blue-hover: #1F4FBF;
+   --amber: #D29922;
+   --green: #2DA44E;
+   --red: #CF222E;
+   --purple: #8250DF;
+   --text-main: #1B1F24;
+   --text-muted: #6E7781;
+   --text-inverted: #F0F3F6;
+}
+
 body {
-
-   font-family: 'Segoe UI', sans-serif;
-
-   background-color: #f8f9fa;
-
+   background:
+      linear-gradient(rgba(11, 15, 20, .78), rgba(11, 15, 20, .90)),
+      url("/static/core/images/hangar-bg.png");
+   background-size: cover;
+   background-position: center;
+   background-attachment: fixed;
+   color: var(--text-main);
 }
 
-.navbar {
-
-   background: linear-gradient(90deg, #212529, #343a40);
-
+.app-shell {
+   width: min(1180px, calc(100% - 48px));
+   margin: 96px auto 48px;
+   padding: 28px;
+   background: rgba(242, 240, 234, 0.96);
+   border: 2px solid var(--steel-mid);
+   box-shadow: 0 24px 65px rgba(0, 0, 0, 0.66);
+   min-height: calc(100vh - 145px);
 }
 
-.navbar-brand {
-
-   font-weight: bold;
-
-   letter-spacing: 1px;
-
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.app-shell h4,
+.app-shell h5 {
+   color: var(--steel-dark);
+   font-weight: 800;
+   letter-spacing: .03em;
 }
 
-.btn-primary {
-
-   background-color: #0d6efd;
-
-   border: none;
-
-   font-weight: 600;
-
-}
-
-.btn-secondary {
-
-   background-color: #6c757d;
-
-   border: none;
-
-   font-weight: 600;
-
-}
-
-.card {
-
-   border-radius: 0;
-
-   border: 1px solid #dee2e6;
-
-}
-
-.list-group-item {
-
-   border: 1px solid #dee2e6;
-
-   border-radius: 0;
-
-}
-
-h1,
-h2,
-h3 {
-
+.app-shell label,
+.app-shell .form-label {
+   color: var(--steel-dark);
    font-weight: 700;
 
-   letter-spacing: 1px;
-
-   text-transform: uppercase;
-
 }
 
-.form-control {
-
-   border-radius: 0;
-
-   border: 1px solid #ced4da;
-
+.app-shell .form-control,
+.app-shell .form-select,
+.app-shell select,
+.app-shell input,
+.app-shell textarea {
+   background-color: #ffffff;
+   border: 1px solid var(--border-light);
+   color: var(--text-main);
 }
 
-textarea.form-control {
-
-   resize: vertical;
-
+.app-shell .card {
+   background: var(--surface-card);
+   border: 1px solid var(--border-light);
+   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
 }
 
-.container {
-
-   max-width: 1100px;
-
+/* Home page control area */
+.app-shell form {
+   max-width: 560px;
 }
 
-.footer {
+.app-shell select,
+.app-shell .form-select {
+   max-width: 560px;
+}
 
-   padding: 20px 0;
+.app-shell .btn {
+   width: auto;
+}
 
-   text-align: center;
+/* Fix Select2 dropdown width on home page */
+.app-shell .select2-container {
+   max-width: 560px !important;
+   width: 560px !important;
+   display: block;
+}
 
-   font-size: 0.9rem;
+.app-shell .select2-selection {
+   max-width: 560px !important;
+}
 
-   color: #6c757d;
+.home-select-panel {
+   max-width: 560px;
+}
 
+.home-part-select {
+   max-width: 560px;
+}
+
+/* HARD FIX: home page select width */
+#partSelect {
+   width: 560px !important;
+   max-width: 560px !important;
+   display: block !important;
+}
+
+/* If Select2 is active, this is the visible dropdown */
+#partSelect+.select2-container,
+.select2-container--default {
+   width: 560px !important;
+   max-width: 560px !important;
+}
+
+/* Limit the home form itself */
+form:has(#partSelect) {
+   width: 560px !important;
+   max-width: 560px !important;
+}
+
+/* HOME PAGE LEFT CONTROL PANEL */
+
+.home-part-form {
+   width: 560px !important;
+   max-width: 560px !important;
+   margin-left: 0 !important;
+}
+
+.home-part-form .form-select,
+.home-part-form select,
+.home-part-form .select2,
+.home-part-form .select2-container {
+   width: 100% !important;
+   max-width: 100% !important;
+}
+
+.home-part-form .select2-selection {
+   width: 100% !important;
+}
+
+@media (max-width: 700px) {
+   .home-part-form {
+      width: 100% !important;
+      max-width: 100% !important;
+   }
+}
+
+/* ===== HOME PAGE FIX ===== */
+#homePartControl {
+   width: 520px;
+   max-width: 520px;
+   margin-bottom: 20px;
+   padding: 16px;
+   background: rgba(242, 240, 234, 0.96);
+   border-left: 5px solid var(--blue);
+   box-shadow: 0 12px 30px rgba(0,0,0,.45);
+}
+/* FORCE select width INSIDE panel */
+#homePartControl select,
+#homePartControl .form-select,
+#homePartControl .select2-container,
+#homePartControl .select2-selection {
+   width: 100% !important;
+   max-width: 100% !important;
+}
+/* Layout for detail area */
+.home-detail-grid {
+   display: grid;
+   grid-template-columns: 1.4fr 0.6fr;
+   gap: 20px;
+}
+/* Part number styling */
+.home-part-number {
+   font-family: Consolas, monospace;
+   font-size: 26px;
+   font-weight: 900;
+   color: var(--steel-dark);
+}
+/* Responsive */
+@media (max-width: 700px) {
+   #homePartControl {
+       width: 100%;
+       max-width: 100%;
+   }
+   .home-detail-grid {
+       grid-template-columns: 1fr;
+   }
 }

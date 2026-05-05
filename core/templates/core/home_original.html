@@ -1,0 +1,69 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<form method="get" class="mb-4 home-part-form">
+   <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="fw-semibold">
+         TOTAL REMOVALS: {{ total_parts }}
+      </div>
+   </div>
+   <div class="mb-3">
+      <label for="partSelect" class="form-label fw-bold fs-3">SELECT A PART</label>
+      <select name="part_number" id="partSelect" class="form-select home-part-select" onchange="this.form.submit()">
+         <option value="">-- Choose a part --</option>
+         {% for part in parts %}
+            <option value="{{ part.part_number }}" {% if selected_part and part.part_number == selected_part.part_number %}selected{% endif %}>
+            {{ part.part_number }}: {{ part.description }}
+            </option>
+         {% endfor %}
+      </select>
+   </div>
+</form>
+<a href="{% url 'add_part' %}" class="btn btn-success mb-3">➕ Add Part</a>
+{% if selected_part %}
+<div class="card mb-4">
+   <div class="card-body">
+      <h5 class="card-title">
+         <span class="part-number">{{ selected_part.part_number }}</span>
+      </h5>
+      <div class="spec-grid">
+         <div><strong>DESCRIPTION</strong></div>
+         <div>{{ selected_part.description }}</div>
+         <div><strong>STA</strong></div>
+         <div>{{ selected_part.sta }}</div>
+         <div><strong>BL</strong></div>
+         <div>{{ selected_part.bl }}</div>
+         <div><strong>WL</strong></div>
+         <div>{{ selected_part.wl }}</div>
+      </div>
+      {% if selected_part.dwg %}
+      <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ selected_part.dwg }}"
+         target="_blank" class="link-tag">
+         {{ selected_part.dwg}}
+      </a>
+      {% else %}
+      N/A
+      {% endif %}
+      <strong>SHT:</strong> {{ selected_part.sht }} |
+      <strong>REV:</strong> {{ selected_part.rev }}</p>
+      <p><strong>Notes:</strong> {{ selected_part.notes }}</p>
+      <a href="{% url 'edit_part' selected_part.part_number %}" class="btn btn-warning btn-sm">✏️ Edit Part</a>
+      <a href="{% url 'edit_requirements' selected_part.part_number %}" class="btn btn-primary btn-sm">📋 Manage
+         Requirements</a>
+   </div>
+</div>
+<h4>Installation Requirements</h4>
+<ul class="list-group mb-4">
+   {% for req in requirements %}
+   <li class="list-group-item">
+      <strong>{{ req.requirement_type }}</strong>
+      {% if req.note %}
+      <br><small class="text-muted">{{ req.note }}</small>
+      {% endif %}
+   </li>
+   {% empty %}
+   <li class="list-group-item text-muted">No requirements yet.</li>
+   {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

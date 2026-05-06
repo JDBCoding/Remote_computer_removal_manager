@@ -1,67 +1,135 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<section class="home-page">
-<!-- LEFT CONTROL PANEL -->
-<form method="get" id="homePartControl" class="home-control-panel">
-<div class="home-control-top">
-<div>
-<div class="home-kicker">Parts Control</div>
-<h1 class="home-title">Select a Part</h1>
-</div>
-</div>
-<label for="partSelect" class="home-label">Part Number</label>
-<select
-           name="part_number"
-           id="partSelect"
-           class="form-select home-part-select"
-           onchange="this.form.submit()">
-<option value="">-- Choose a part --</option>
-           {% for part in parts %}
-<option value="{{ part.part_number }}"
-                   {% if selected_part and part.part_number == selected_part.part_number %}selected{% endif %}>
-                   {{ part.part_number }}: {{ part.description }}
-</option>
-           {% endfor %}
-</select>
-<div class="home-actions">
-<a href="{% url 'add_part' %}" class="btn btn-success">+ Add Part</a>
-</div>
-</form>
-
-<!-- PART DETAILS -->
-   {% if selected_part %}
-<div class="home-detail-grid">
-<div class="card home-part-card">
-<div class="card-body">
-<h2 class="home-part-number">{{ selected_part.part_number }}</h2>
-<div class="spec-grid">
-<div><strong>Description</strong></div>
-<div>{{ selected_part.description }}</div>
-<div><strong>STA</strong></div>
-<div>{{ selected_part.sta }}</div>
-<div><strong>BL</strong></div>
-<div>{{ selected_part.bl }}</div>
-<div><strong>WL</strong></div>
-<div>{{ selected_part.wl }}</div>
-</div>
-</div>
-</div>
-<div class="card home-req-card">
-<div class="card-body">
-<h3>Installation Requirements</h3>
-<ul class="list-group">
-                   {% for req in requirements %}
-<li class="list-group-item">
-<strong>{{ req.requirement_type }}</strong><br>
-<small>{{ req.note }}</small>
-</li>
-                   {% empty %}
-<li class="list-group-item text-muted">No requirements yet.</li>
-                   {% endfor %}
-</ul>
-</div>
-</div>
-</div>
-   {% endif %}
+<section class="rm-home-layout">
+   <!-- LEFT OPERATIONS PANEL -->
+   <aside class="rm-operations-panel">
+      <div class="rm-page-header">
+         <h1 class="rm-page-title">Parts Control</h1>
+         <div class="rm-page-subtitle">
+            Aircraft part removals and installation requirments
+         </div>
+      </div>
+      <form method="get" id="homePartControl">
+         <div class="mb-3">
+            <label for="partSelect" class="form-label">
+               Select Part
+            </label>
+            <select name="part_number" id="partSelect" class="form-select" onchange="this.form.submit()">
+               <option value="">
+                  -- Choose a part --
+               </option>
+               {% for part in parts %}
+               <option value="{{ part.part_number }}">
+                  {{ part.part_number }} : {{ part.description }}
+               </option>
+               {% endfor %}
+            </select>
+         </div>
+         <div class="rm-action-row">
+            <a href="{% url 'add_part' %}" class="btn btn-success">
+               Add Part
+            </a>
+            <a href="{% url 'planning_request_create' %}" class="btn btn-primary">
+               Planning Request
+            </a>
+         </div>
+      </form>
+      <div class="rm-status-panel">
+         <div class="rm-status-label">
+            Total Parts
+         </div>
+         <div class="rm-status-value">
+            {{ total_parts }}
+         </div>
+      </div>
+   </aside>
+   <!-- MAIN CONTENT -->
+   <section class="rm-home-content">
+      {% if selected_part %}
+      <div class="card mb-4">
+         <div class="card-body">
+            <div class="rm-part-header">
+               <div>
+                  <div class="rm-page-subtitle">
+                     Selected Part
+                  </div>
+                  <h2 class="part-number">
+                     {{ selected_part.part_number }}
+                  </h2>
+               </div>
+               <div class="rm-action-row">
+                  <a href="{% url 'edit_part' selected_part.part_number %}" class="btn btn-warning">
+                     Edit Part
+                  </a>
+                  <a href="{% url 'edit_requirements' selected_part.part_number %}" class="btn btn-secondary">
+                     Requirements
+                  </a>
+               </div>
+            </div>
+            <div class="spec-grid">
+               <div>Description</div>
+               <div>{{ selected_part.description }}</div>
+               <div>STA</div>
+               <div>{{ selected_part.sta }}</div>
+               <div>BL</div>
+               <div>{{ selected_part.bl }}</div>
+               <div>WL</div>
+               <div>{{ selected_part.wl }}</div>
+               <div>Drawing</div>
+               <div>
+                  {% if selected_part.dwg %}
+                  <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ selected_part.dwg }}"
+                     target="_blank" class="link-tag">
+                     {{ selected_part.dwg }}
+                  </a>
+                  {% else %}
+                  N/A
+                  {% endif %}
+               </div>
+               <div>Sheet</div>
+               <div>{{ selected_part.sht }}</div>
+               <div>Revision</div>
+               <div>{{ selected_part.rev }}</div>
+               <div>Notes</div>
+               <div>{{ selected_part.notes }}</div>
+            </div>
+         </div>
+      </div>
+      <div class="card">
+         <div class="card-body">
+            <div class="rm-page-header">
+               <h3 class="rm-page-title">
+                  Installation Requirements
+               </h3>
+            </div>
+            <div class="rm-requirement-grid">
+               {% for req in requirements %}
+               <div class="rm-requirement-item">
+                  <div class="rm-requirement-type">
+                     {{ req.requirement_type }}
+                  </div>
+                  <div class="rm-requirement-note">
+                     {{ req.note }}
+                  </div>
+               </div>
+               {% empty %}
+               <div class="text-muted">
+                  No requirements found.
+               </div>
+               {% endfor %}
+            </div>
+         </div>
+      </div>
+      {% else %}
+      <div class="rm-empty-state">
+         <div class="rm-empty-title">
+            Awaiting Part Selection
+         </div>
+         <div class="rm-empty-subtitle">
+            Select a part from the operations panel to view aircraft installation data.
+         </div>
+      </div>
+      {% endif %}
+   </section>
 </section>
 {% endblock %}

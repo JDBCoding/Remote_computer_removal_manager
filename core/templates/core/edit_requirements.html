@@ -1,55 +1,104 @@
 {% extends 'core/base.html' %}
+
 {% block content %}
-<h2>Installation Requirements for {{ part.part_number }}</h2>
-<ul class="list-group mb-4">
-     {% for req in requirements %}
-     <li class="list-group-item d-flex justify-content-between align-items-center">
+<section class="rm-requirements-page">
+     <header class="rm-form-header">
           <div>
-               <strong>{{ req.requirement_type }}</strong>
+               <div class="rm-form-kicker">Installation Requirements</div>
+               <h1 class="rm-form-title">{{ part.part_number }}</h1>
+               <p class="rm-form-subtitle">
 
-               {% if req.note %}
-               <div class="text-muted small">{{ req.note }}</div>
-
-               {% endif %}
+                    Review, add, edit, or delete requirements tied to this part.
+               </p>
           </div>
-          <div class="btn-group btn-group-sm" role="group">
-               <a class="btn btn-outline-primary" href="{% url 'requirement_edit' req.id %}">
+     </header>
+     <section class="rm-form-panel">
+          <div class="rm-panel-title">Current Requirements</div>
+          <div class="rm-requirements-manage-list">
 
-                    Edit
-               </a>
-               <a class="btn btn-danger" href="{% url 'edit_requirements' part.part_number %}?delete={{ req.id }}"
-                    onclick="return confirm('Delete this requirement?');">
+               {% for req in requirements %}
+               <div class="rm-requirement-manage-card">
+                    <div>
+                         <div class="rm-requirement-type">
 
-                    Delete
-               </a>
+                              {{ req.requirement_type }}
+                         </div>
+
+                         {% if req.note %}
+                         <div class="rm-requirement-note">
+
+                              {{ req.note }}
+                         </div>
+
+                         {% else %}
+                         <div class="rm-requirement-note text-muted">
+
+                              No notes added.
+                         </div>
+
+                         {% endif %}
+                    </div>
+                    <div class="rm-requirement-actions">
+                         <a class="btn btn-primary btn-sm" href="{% url 'requirement_edit' req.id %}">
+
+                              Edit
+                         </a>
+                         <a class="btn btn-danger btn-sm"
+                              href="{% url 'edit_requirements' part.part_number %}?delete={{ req.id }}"
+                              onclick="return confirm('Delete this requirement?');">
+
+                              Delete
+                         </a>
+                    </div>
+               </div>
+
+               {% empty %}
+               <div class="rm-empty-inline">
+
+                    No requirements added yet.
+               </div>
+
+               {% endfor %}
           </div>
-     </li>
+     </section>
+     <section class="rm-form-panel">
+          <div class="rm-panel-title">Add Requirement</div>
 
-     {% empty %}
-     <li class="list-group-item text-muted">No requirements added yet.</li>
+          {% if form.errors %}
+          <div class="alert alert-danger">
+               <strong>Could not add requirement:</strong>
 
-     {% endfor %}
-</ul>
-<h3>Add Installation Requirement</h3>
+               {{ form.errors }}
+          </div>
 
-{% if form.errors %}
-<div class="alert alert-danger">
-     <strong>Could not add requirement:</strong>
+          {% endif %}
+          <form method="post" class="rm-requirement-form">
 
-     {{ form.errors }}
-</div>
+               {% csrf_token %}
+               <div class="rm-form-grid rm-form-grid-2">
+                    <div class="rm-field">
+                         <label for="{{ form.requirement_type.id_for_label }}">Requirement Type</label>
 
-{% endif %}
-<form method="post" class="mt-3">
+                         {{ form.requirement_type }}
+                    </div>
+                    <div class="rm-field">
+                         <label for="{{ form.note.id_for_label }}">Notes</label>
 
-     {% csrf_token %}
+                         {{ form.note }}
+                    </div>
+               </div>
+               <div class="rm-form-actions">
+                    <button type="submit" class="btn btn-success">
 
-     {{ form.as_p }}
-     <button type="submit" class="btn btn-success">Add</button>
-     <a class="btn btn-secondary" href="{% url 'home' %}?part_number={{ part.part_number }}">
+                         Add Requirement
+                    </button>
+                    <a class="btn btn-secondary" href="{% url 'home' %}?part_number={{ part.part_number }}">
 
-          Return to Part View
-     </a>
-</form>
+                         Return to Part View
+                    </a>
+               </div>
+          </form>
+     </section>
+</section>
 
 {% endblock %}

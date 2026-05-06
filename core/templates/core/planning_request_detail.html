@@ -1,41 +1,102 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h2>Planning Request</h2>
-{% if request_obj.created_at %}
-<p><strong>Created:</strong> {{ request_obj.created_at }}</p>
-{% endif %}
-{% if job_number %}
-<p><strong>Job Number:</strong> {{ job_number }}</p>
-{% endif %}
-<form method="post" action="{% url 'generate_planning_message' %}">
- {% csrf_token %}
-<div class="mb-3">
-<label class="form-label">Job Number:</label>
-<input type="text" name="job_number" value="{{ job_number }}" class="form-control" readonly>
-</div>
-<div class="mb-3">
-<label class="form-label">Notes / Special Instructions:</label>
-<textarea name="notes" class="form-control" rows="4"></textarea>
-</div>
- {% for part in parts %}
-<div class="mb-3 p-3 border rounded bg-light">
-<p><strong>Part:</strong> {{ part.part_number }}</p>
-<p>
-<strong>DWG:</strong> {{ part.dwg }} |
-<strong>SHT:</strong> {{ part.sht }} |
-<strong>REV:</strong> {{ part.rev }}
-</p>
-<p><strong>Requirements:</strong></p>
-<ul>
-       {% for req in part.requirements.all %}
-<li>{{ req.requirement_type }}</li>
-       {% empty %}
-<li><em>No requirements</em></li>
-       {% endfor %}
-</ul>
-<input type="text" name="op_{{ part.part_number }}" class="form-control mb-2" placeholder="Enter OP for {{ part.part_number }}">
-</div>
- {% endfor %}
-<button type="submit" class="btn btn-success mt-3">Submit Planning Request</button>
-</form>
+<section class="rm-planning-page">
+       <header class="rm-form-header">
+              <div>
+                     <div class="rm-form-kicker">Planning Workflow</div>
+                     <h1 class="rm-form-title">Planning Request</h1>
+                     <p class="rm-form-subtitle">
+                            Review selected parts, confirm operation numbers, and generate the planning message.
+                     </p>
+              </div>
+       </header>
+       <form method="post" action="{% url 'generate_planning_message' %}" class="rm-planning-form">
+              {% csrf_token %}
+              <section class="rm-form-panel">
+                     <div class="rm-panel-title">Request Summary</div>
+                     <div class="rm-form-grid rm-form-grid-2">
+                            <div class="rm-field">
+                                   <label class="form-label">Job Number</label>
+                                   <input type="text" name="job_number" value="{{ job_number }}" class="form-control"
+                                          readonly>
+                            </div>
+                            <div class="rm-field">
+                                   <label class="form-label">Created</label>
+                                   <input type="text"
+                                          value="{% if request_obj.created_at %}{{ request_obj.created_at }}{% else %}Pending{% endif %}"
+                                          class="form-control" readonly>
+                            </div>
+                     </div>
+                     <div class="rm-field">
+                            <label class="form-label">Notes / Special Instructions</label>
+                            <textarea name="notes" class="form-control" rows="4"></textarea>
+                     </div>
+              </section>
+              <section class="rm-form-panel">
+                     <div class="rm-panel-title">Selected Parts</div>
+                     <div class="rm-selected-part-list">
+                            {% for part in parts %}
+                            <div class="rm-selected-part-card">
+                                   <div class="rm-selected-part-header">
+                                          <div>
+                                                 <div class="rm-form-kicker">Selected Part</div>
+                                                 <h2 class="rm-selected-part-number">{{ part.part_number }}</h2>
+                                          </div>
+                                          <div class="rm-selected-part-drawing">
+                                                 <span>DWG</span>
+                                                 <strong>{{ part.dwg }}</strong>
+                                          </div>
+                                   </div>
+                                   <div class="rm-selected-part-meta">
+                                          <div>
+                                                 <span>SHT</span>
+                                                 <strong>{{ part.sht }}</strong>
+                                          </div>
+                                          <div>
+                                                 <span>REV</span>
+                                                 <strong>{{ part.rev }}</strong>
+                                          </div>
+                                   </div>
+                                   <div class="rm-field rm-op-detail-field">
+                                          <label class="form-label">Operation Number</label>
+                                          <input type="text" name="op_{{ part.part_number }}" class="form-control"
+                                                 placeholder="Enter OP for {{ part.part_number }}">
+                                   </div>
+                                   <div class="rm-selected-req-block">
+                                          <div class="rm-selected-req-title">Requirements</div>
+                                          <div class="rm-requirement-grid">
+                                                 {% for req in part.requirements.all %}
+                                                 <div class="rm-requirement-item">
+                                                        <div class="rm-requirement-type">
+                                                               {{ req.requirement_type }}
+                                                        </div>
+                                                        {% if req.note %}
+                                                        <div class="rm-requirement-note">
+                                                               {{ req.note }}
+                                                        </div>
+                                                        {% endif %}
+                                                 </div>
+                                                 {% empty %}
+                                                 <div class="rm-requirement-item">
+                                                        <div class="rm-requirement-note">
+                                                               No requirements.
+                                                        </div>
+                                                 </div>
+                                                 {% endfor %}
+                                          </div>
+                                   </div>
+                            </div>
+                            {% endfor %}
+                     </div>
+              </section>
+              <div class="rm-form-actions">
+                     <button type="submit" class="btn btn-success">
+                            Submit Planning Request
+                     </button>
+                     <a href="{% url 'planning_request_create' %}" class="btn btn-secondary">
+                            Back
+                     </a>
+              </div>
+       </form>
+</section>
 {% endblock %}

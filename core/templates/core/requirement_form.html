@@ -1,20 +1,59 @@
-{% extends 'core/base.html' %} {% block content %}
-<h2>Add Installation Requirement for {{ part.part_number }}</h2>
-<form method="post">
-  {% csrf_token %} {{ formset.management_form }} {% for form in formset %}
-  <div class="mb-3">
-    {{ form.as_p }}
-    <input
-      type="checkbox"
-      name="form-{{ forloop.counter0 }}-DELETE"
-      id="id_form-{{ forloop.counter0 }}-DELETE"
-    />
-    <label for="id_form-{{ forloop.counter0 }}-DELETE">Delete</label>
-  </div>
-  {% endfor %}
+{% extends 'core/base.html' %}
 
-  <button type="submit" class="btn btn-success">Add</button>
-  <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
-</form>
+{% block content %}
+<section class="rm-requirements-page">
+  <header class="rm-form-header">
+    <div>
+      <div class="rm-form-kicker">Installation Requirements</div>
+      <h1 class="rm-form-title">Add Requirements</h1>
+      <p class="rm-form-subtitle">
+
+        Add installation requirements for {{ part.part_number }}.
+      </p>
+    </div>
+  </header>
+  <form method="post" class="rm-requirement-form">
+
+    {% csrf_token %}
+
+    {{ formset.management_form }}
+    <section class="rm-form-panel">
+      <div class="rm-panel-title">Requirement Entries</div>
+      <div class="rm-requirements-formset">
+
+        {% for form in formset %}
+        <div class="rm-requirement-editor">
+
+          {{ form.id }}
+          <div class="rm-form-grid rm-form-grid-2">
+            <div class="rm-field">
+              <label for="{{ form.requirement_type.id_for_label }}">Requirement Type</label>
+
+              {{ form.requirement_type }}
+            </div>
+            <div class="rm-field">
+              <label for="{{ form.note.id_for_label }}">Notes</label>
+              {{ form.note }}
+            </div>
+          </div>
+          <div class="rm-delete-row">
+            <label for="id_form-{{ forloop.counter0 }}-DELETE">Delete</label>
+            <input type="checkbox" name="form-{{ forloop.counter0 }}-DELETE" id="id_form-{{ forloop.counter0 }}-DELETE">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    <div class="rm-form-actions">
+      <button type="submit" class="btn btn-success">
+
+        Add
+      </button>
+      <a href="{% url 'home' %}" class="btn btn-secondary">
+        Cancel
+      </a>
+    </div>
+  </form>
+</section>
 
 {% endblock %}

@@ -1,23 +1,47 @@
 {% extends "core/base.html" %}
 
 {% block content %}
-<h2>Edit Installation Requirement</h2>
-<form method="post">
+<section class="rm-requirements-page">
+<header class="rm-form-header">
+<div>
+<div class="rm-form-kicker">Installation Requirement</div>
+<h1 class="rm-form-title">Edit Requirement</h1>
+<p class="rm-form-subtitle">
 
-    {% csrf_token %}
+                Update the requirement type or note for {{ requirement.part.part_number }}.
+</p>
+</div>
+</header>
+<section class="rm-form-panel">
+<div class="rm-panel-title">Requirement Details</div>
+<form method="post" class="rm-requirement-form">
 
-    {{ form.as_p }}
+            {% csrf_token %}
+<div class="rm-form-grid rm-form-grid-2">
+<div class="rm-field">
+<label for="{{ form.requirement_type.id_for_label }}">Requirement Type</label>
+
+                    {{ form.requirement_type }}
+</div>
+<div class="rm-field">
+<label for="{{ form.note.id_for_label }}">Notes</label>
+
+                    {{ form.note }}
+</div>
+</div>
+<div class="rm-form-actions">
 <button type="submit" class="btn btn-primary">
 
-        Save Changes
+                    Save Changes
 </button>
-<a href="{% url 'edit_requirements' requirement.part.part_number %}"
+<a href="{% url 'edit_requirements' requirement.part.part_number %}" class="btn btn-secondary">
 
-       class="btn btn-secondary">
-
-        Cancel
+                    Cancel
 </a>
+</div>
 </form>
+</section>
+</section>
 
 {% endblock %}
  

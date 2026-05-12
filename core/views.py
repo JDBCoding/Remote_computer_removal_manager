@@ -236,7 +236,10 @@ def planning_request_create(request):
             requirements = part.requirements.all()
             if requirements.exists():
                 for req in requirements:
-                    planning_message_lines.append(f"- {req.requirement_type}")
+                    line = f"- {req.requirement_type}"
+                    if req.note:
+                        line += f" - {req.note}"
+                    planning_message_lines.append(line)
             else:
                 planning_message_lines.append("- (No requirements listed)")
             planning_message_lines.append("")  # blank line between parts

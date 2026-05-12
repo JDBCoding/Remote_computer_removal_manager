@@ -11,8 +11,7 @@ urlpatterns = [
     path('requirement/<str:part_number>/edit/', views.edit_requirements, name='edit_requirements'),
     path('requirement/<str:pk>/add/', views.add_requirement, name='add_requirement'),
     path('planning/create/', views.planning_request_create, name='planning_request_create'),
-    path('planning/<int:pk>/', views.planning_request_detail, name='planning_request_detail'),
-    path('planning/message/', views.generate_planning_message, name="generate_planning_message"),
+   
     
 ]
 

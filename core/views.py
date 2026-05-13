@@ -22,7 +22,6 @@ from django.forms.models import inlineformset_factory
 from .forms import UnifiedRemovalForm
 from django.http import HttpResponseBadRequest, HttpResponse
 
-
 InstallationRequirementFormSet = inlineformset_factory(
     Part,
     InstallationRequirement,
@@ -61,30 +60,35 @@ def add_part(request):
     if request.method == "POST":
         part_form = PartForm(request.POST)
         if part_form.is_valid():
-            part = part_form.save(commit=False)  # don't save yet
-            formset = InstallationRequirementFormSet(request.POST, instance=part)
+            part = part_form.save(commit=False)
+            formset = InstallationRequirementFormSet(
+                request.POST, instance=part, prefix="form"
+            )
             if formset.is_valid():
-                part.save()  # now we can save the part
+                part.save()
+                formset.instance = part
                 formset.save()
                 return redirect("home")
             else:
                 logger.warning("Formset Errors: %s", formset.errors)
                 logger.warning("Formset Non-Form Errors: %s", formset.non_form_errors())
         else:
-            formset = InstallationRequirementFormSet(
-                request.POST
-            )  # fallback for rendering
+            formset = InstallationRequirementFormSet(request.POST, prefix="form")
             logger.warning("Part Form Errors: %s", part_form.errors)
             logger.warning(
                 "Part Form Non-Field Errors: %s", part_form.non_field_errors()
             )
     else:
         part_form = PartForm()
-        formset = InstallationRequirementFormSet()
+        formset = InstallationRequirementFormSet(prefix="form")
     return render(
         request,
         "core/part_form.html",
-        {"part_form": part_form, "formset": formset, "action": "Create"},
+        {
+            "part_form": part_form,
+            "formset": formset,
+            "action": "Create",
+        },
     )
 
 

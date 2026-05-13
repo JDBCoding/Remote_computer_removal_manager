@@ -18,8 +18,8 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-#DATA_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "RemovalManager"#
-#DATA_DIR.mkdir(parents=True, exist_ok=True)#
+# DATA_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "RemovalManager"#
+# DATA_DIR.mkdir(parents=True, exist_ok=True)#
 
 
 # Quick-start development settings - unsuitable for production
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-75xgs=a5i%57s&)gu^j3c0w-)k9+(yyldl*@8hlf**3@qthwx3"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -87,7 +87,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-print("ACTIVE DB:", DATABASES['default']['NAME'])
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

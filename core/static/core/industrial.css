@@ -170,6 +170,30 @@ body {
 }
 
 /* =========================================================
+   REFERENCE BANNER
+========================================================= */
+.reference-banner {
+   background: linear-gradient(
+       90deg,
+       #4a3a00 0%,
+       #6b5200 50%,
+       #4a3a00 100%
+   );
+   color: #f5d97a;
+   border-top: 1px solid #8b6b12;
+   border-bottom: 1px solid #8b6b12;
+   padding: 8px 16px;
+   text-align: center;
+   font-size: 0.82rem;
+   font-weight: 600;
+   letter-spacing: 0.8px;
+   text-transform: uppercase;
+   box-shadow:
+       inset 0 1px 0 rgba(255,255,255,0.08),
+       inset 0 -1px 0 rgba(0,0,0,0.35);
+}
+
+/* =========================================================
   APP SHELL
 ========================================================= */
 .rm-app-shell {

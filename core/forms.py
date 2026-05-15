@@ -1,25 +1,80 @@
 from django import forms
-from .models import Part, InstallationRequirement, PlanningRequestItem, PlanningRequest
+from .models import Part, PartInstallation, DrawingReference, InstallationRequirement, PlanningRequestItem, PlanningRequest
 from django.forms import modelformset_factory, inlineformset_factory
 
 
 class PartForm(forms.ModelForm):
-    class Meta:
-        model = Part
-        fields = "__all__"
-        widgets = {
-            "part_number": forms.TextInput(attrs={"class": "form-control"}),
-            # Set rows to 1
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 1}),
-            "sta": forms.TextInput(attrs={"class": "form-control"}),
-            "bl": forms.TextInput(attrs={"class": "form-control"}),
-            "wl": forms.TextInput(attrs={"class": "form-control"}),
-            "dwg": forms.TextInput(attrs={"class": "form-control"}),
-            "sht": forms.TextInput(attrs={"class": "form-control"}),
-            "rev": forms.TextInput(attrs={"class": "form-control"}),
-            # Set rows to 3
-            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-        }
+   class Meta:
+       model = Part
+       fields = [
+           "part_number",
+           "description",
+           "notes",
+       ]
+       widgets = {
+           "part_number": forms.TextInput(
+               attrs={"class": "form-control"}
+           ),
+           "description": forms.Textarea(
+               attrs={
+                   "class": "form-control",
+                   "rows": 1
+               }
+           ),
+           "notes": forms.Textarea(
+               attrs={
+                   "class": "form-control",
+                   "rows": 3
+               }
+           ),
+       }
+        
+class PartInstallationForm(forms.ModelForm):
+   class Meta:
+       model = PartInstallation
+       fields = ["name", "sta", "bl", "wl", "notes"]
+       widgets = {
+           "name": forms.TextInput(attrs={"class": "form-control"}),
+           "sta": forms.TextInput(attrs={"class": "form-control"}),
+           "bl": forms.TextInput(attrs={"class": "form-control"}),
+           "wl": forms.TextInput(attrs={"class": "form-control"}),
+           "notes": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+       }
+
+class DrawingReferenceForm(forms.ModelForm):
+   class Meta:
+       model = DrawingReference
+       fields = ["dwg", "sht", "rev", "note"]
+       widgets = {
+           "dwg": forms.TextInput(attrs={"class": "form-control"}),
+           "sht": forms.TextInput(attrs={"class": "form-control"}),
+           "rev": forms.TextInput(attrs={"class": "form-control"}),
+           "note": forms.TextInput(attrs={"class": "form-control"}),
+       }
+
+PartInstallationFormSet = inlineformset_factory(
+   Part,
+   PartInstallation,
+   form=PartInstallationForm,
+   extra=0,
+   can_delete=True,
+)
+
+PartInstallationCreateFormSet = inlineformset_factory(
+   Part,
+   PartInstallation,
+   form=PartInstallationForm,
+   extra=1,
+   can_delete=False,
+)
+
+DrawingReferenceFormSet = inlineformset_factory(
+   PartInstallation,
+   DrawingReference,
+   form=DrawingReferenceForm,
+   extra=1,
+   can_delete=True,
+)
 
 
 class InstallationRequirementForm(forms.ModelForm):

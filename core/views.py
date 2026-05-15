@@ -8,6 +8,9 @@ from django.db.models import Case, When, Value, IntegerField
 from .models import Part, InstallationRequirement, PlanningRequest, PlanningRequestItem
 from .forms import (
     PartForm,
+    PartInstallationFormSet,
+    PartInstallationCreateFormSet,
+    DrawingReferenceFormSet,
     InstallationRequirementForm,
     PlanningRequestForm,
     PlanningRequestItemFormSet,
@@ -36,10 +39,14 @@ def home(request):
     parts = Part.objects.sorted_for_planning()
     selected_part = None
     requirements = []
+    installations = []
     part_number = request.GET.get("part_number")
     if part_number:
         selected_part = get_object_or_404(Part, part_number=part_number)
         requirements = selected_part.requirements.all()
+        installations = selected_part.installations.prefetch_related(
+            "drawing_refs"
+        ).order_by("id")
     return render(
         request,
         "core/home.html",
@@ -47,6 +54,7 @@ def home(request):
             "parts": parts,
             "selected_part": selected_part,
             "requirements": requirements,
+            "installations": installations,
             "total_parts": total_parts,
         },
     )
@@ -59,60 +67,114 @@ def how_to_use(request):
 def add_part(request):
     if request.method == "POST":
         part_form = PartForm(request.POST)
-        if part_form.is_valid():
-            part = part_form.save(commit=False)
-            formset = InstallationRequirementFormSet(
-                request.POST, instance=part, prefix="form"
-            )
-            if formset.is_valid():
-                part.save()
-                formset.instance = part
-                formset.save()
-                return redirect("home")
-            else:
-                logger.warning("Formset Errors: %s", formset.errors)
-                logger.warning("Formset Non-Form Errors: %s", formset.non_form_errors())
+        formsset = InstallationRequirementFormSet(request.POST, prefix="form")
+        installation_formset = PartInstallationCreateFormSet(
+            request.POST, prefix="install"
+        )
+        if (
+            part_form.is_valid()
+            and formsset.is_valid()
+            and installation_formset.is_valid()
+        ):
+            part = part_form.save()
+            installation_formset.instance = part
+            installation_formset.save()
+            formsset.instance = part
+            formsset.save()
+            return redirect(f"/?part_number={part.part_number}")
         else:
-            formset = InstallationRequirementFormSet(request.POST, prefix="form")
             logger.warning("Part Form Errors: %s", part_form.errors)
+            logger.warning("Requirement Formset Errors: %s", formsset.errors)
             logger.warning(
-                "Part Form Non-Field Errors: %s", part_form.non_field_errors()
+                "Installation Formset Errors: %s", installation_formset.errors
             )
     else:
         part_form = PartForm()
-        formset = InstallationRequirementFormSet(prefix="form")
+        formsset = InstallationRequirementFormSet(prefix="form")
+        installation_formset = PartInstallationCreateFormSet(prefix="install")
     return render(
         request,
         "core/part_form.html",
         {
             "part_form": part_form,
-            "formset": formset,
+            "formset": formsset,
+            "installation_formset": installation_formset,
+            "drawing_formsets": [],
             "action": "Create",
         },
     )
-
 
 def edit_part(request, pk):
     part = get_object_or_404(Part, pk=pk)
     if request.method == "POST":
         part_form = PartForm(request.POST, instance=part)
-        formset = InstallationRequirementFormSet(
+        formsset = InstallationRequirementFormSet(
             request.POST, instance=part, prefix="form"
         )
-        if part_form.is_valid() and formset.is_valid():
+        installation_formset = PartInstallationFormSet(
+            request.POST, instance=part, prefix="install"
+        )
+        installations_valid = installation_formset.is_valid()
+        drawing_formsets = []
+        if installations_valid:
+            for install_form in installation_formset.forms:
+                installation_instance = install_form.instance
+                drawing_formset = DrawingReferenceFormSet(
+                    request.POST,
+                    instance=installation_instance,
+                    prefix=f"dwg-{install_form.prefix}",
+                )
+                drawing_formsets.append(drawing_formset)
+        drawing_valid = all(fs.is_valid() for fs in drawing_formsets)
+
+        if (
+            part_form.is_valid()
+            and formsset.is_valid()
+            and installations_valid
+            and drawing_valid
+        ):
+
             part = part_form.save()
-            formset.save()
+            formsset.save()
+            installation_formset.save()
+            for drawing_formset in drawing_formsets:
+                drawing_formset.save()
             return redirect(f"/?part_number={part.part_number}")
         else:
             logger.warning("Part Form Errors: %s", part_form.errors)
-            logger.warning("Formset Errors: %s", formset.errors)
+            logger.warning("Requirement Formset Errors: %s", formsset.errors)
+            logger.warning(
+                "Installation Formset Errors: %s", installation_formset.errors
+            )
+            for drawing_formset in drawing_formsets:
+                logger.warning("Drawing Formset Errors: %s", drawing_formset.errors)
     else:
         part_form = PartForm(instance=part)
-        formset = InstallationRequirementFormSet(instance=part, prefix="form")
+        formsset = InstallationRequirementFormSet(instance=part, prefix="form")
+        installation_formset = PartInstallationFormSet(instance=part, prefix="install")
+        drawing_formsets = []
+        for install_form in installation_formset.forms:
+            drawing_formsets.append(
+                (
+                    install_form.instance.pk,
+                    DrawingReferenceFormSet(
+                        instance=install_form.instance,
+                        prefix=f"dwg-{install_form.prefix}",
+                    ),
+                )
+            )
+
     return render(
         request,
         "core/part_form.html",
-        {"part_form": part_form, "formset": formset, "action": "Save", "part": part},
+        {
+            "part_form": part_form,
+            "formset": formsset,
+            "installation_formset": installation_formset,
+            "drawing_formsets": drawing_formsets,
+            "action": "Save",
+            "part": part,
+        },
     )
 
 

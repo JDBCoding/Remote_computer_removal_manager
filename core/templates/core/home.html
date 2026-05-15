@@ -69,30 +69,65 @@
             <div class="spec-grid">
                <div>Description</div>
                <div>{{ selected_part.description }}</div>
-               <div>STA</div>
-               <div>{{ selected_part.sta }}</div>
-               <div>BL</div>
-               <div>{{ selected_part.bl }}</div>
-               <div>WL</div>
-               <div>{{ selected_part.wl }}</div>
-               <div>Drawing</div>
-               <div>
-                  {% if selected_part.dwg %}
-                  <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ selected_part.dwg }}"
-                     target="_blank" class="link-tag">
-                     {{ selected_part.dwg }}
-                  </a>
-                  {% else %}
-                  N/A
-                  {% endif %}
-               </div>
-               <div>Sheet</div>
-               <div>{{ selected_part.sht }}</div>
-               <div>Revision</div>
-               <div>{{ selected_part.rev }}</div>
                <div>Notes</div>
                <div>{{ selected_part.notes }}</div>
             </div>
+            {% if installations %}
+            {% for installation in installations %}
+            <div class="card mt-3">
+               <div class="card-body">
+                  {% if installations|length > 1 %}
+                  <h4 class="rm-page-title">
+                     Install Location {{ forloop.counter }}
+                     {% if installation.name and installation.name != "DEFAULT" %}
+                     : {{ installation.name }}
+                     {% endif %}
+                  </h4>
+                  {% endif %}
+                  <div class="spec-grid">
+                     <div>STA</div>
+                     <div>{{ installation.sta }}</div>
+                     <div>BL</div>
+                     <div>{{ installation.bl }}</div>
+                     <div>WL</div>
+                     <div>{{ installation.wl }}</div>
+                     <div>Location Notes</div>
+                     <div>{{ installation.notes }}</div>
+                  </div>
+                  <div class="mt-3">
+                     <h5>Reference DWGs</h5>
+                     {% for ref in installation.drawing_refs.all %}
+                     <div class="spec-grid mb-2">
+                        <div>Drawing</div>
+                        <div>
+                           {% if ref.dwg %}
+                           <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ ref.dwg }}"
+                              target="_blank" class="link-tag">
+                              {{ ref.dwg }}
+                           </a>
+                           {% else %}
+                           N/A
+                           {% endif %}
+                        </div>
+                        <div>Sheet</div>
+                        <div>{{ ref.sht }}</div>
+                        <div>Revision</div>
+                        <div>{{ ref.rev }}</div>
+                        <div>DWG Note</div>
+                        <div>{{ ref.note }}</div>
+                     </div>
+                     {% empty %}
+                     <div class="text-muted">No drawing references found.</div>
+                     {% endfor %}
+                  </div>
+               </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-muted mt-3">
+               No installation location records found for this part.
+            </div>
+            {% endif %}
          </div>
       </div>
       <div class="card">

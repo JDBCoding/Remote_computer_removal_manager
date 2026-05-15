@@ -84,6 +84,76 @@ class Part(models.Model):
                 setattr(self, field, value.strip().upper())
         super().save(*args, **kwargs)
 
+    def save(self, *args, **kwargs):
+       # Normalize key fields to uppercase on every save
+       uppercase_fields = [
+           "part_number",
+           "description",
+           "sta",
+           "bl",
+           "wl",
+           "dwg",
+           "sht",
+           "rev",
+       ]
+       for field in uppercase_fields:
+           value = getattr(self, field, None)
+           if isinstance(value, str) and value:
+               setattr(self, field, value.strip().upper())
+       super().save(*args, **kwargs)
+       self.ensure_default_installation()
+       
+    def ensure_default_installation(self):
+       installation, created = PartInstallation.objects.get_or_create(
+           part=self,
+           name="DEFAULT",
+           defaults={
+               "sta": self.sta or "",
+               "bl": self.bl or "",
+               "wl": self.wl or "",
+           }
+       )
+       if self.dwg:
+           DrawingReference.objects.get_or_create(
+               installation=installation,
+               dwg=self.dwg,
+               sht=self.sht or "",
+               rev=self.rev or "",
+           )
+       return installation
+
+class PartInstallation(models.Model):
+   part = models.ForeignKey(
+       Part,
+       on_delete=models.CASCADE,
+       related_name='installations'
+   )
+   name = models.CharField(
+       max_length=100,
+       blank=True,
+       default='DEFAULT'
+   )
+   sta = models.CharField(max_length=20, blank=True)
+   bl = models.CharField(max_length=20, blank=True)
+   wl = models.CharField(max_length=20, blank=True)
+   notes = models.TextField(blank=True)
+   created_at = models.DateTimeField(auto_now_add=True)
+   def __str__(self):
+       return f"{self.part.part_number} - {self.name}"
+
+   
+class DrawingReference(models.Model):
+   installation = models.ForeignKey(
+       PartInstallation,
+       on_delete=models.CASCADE,
+       related_name='drawing_refs'
+   )
+   dwg = models.CharField(max_length=50)
+   sht = models.CharField(max_length=20, blank=True)
+   rev = models.CharField(max_length=20, blank=True)
+   note = models.CharField(max_length=255, blank=True)
+   def __str__(self):
+       return f"{self.dwg} | SHT {self.sht} | REV {self.rev}"
 
 class InstallationRequirement(models.Model):
     part = models.ForeignKey(

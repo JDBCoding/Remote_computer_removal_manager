@@ -1,76 +1,144 @@
-{% extends 'core/base.html' %}
-{% block content %}
+{% extends "core/base.html" %}
 {% load widget_tweaks %}
+{% block content %}
 <section class="rm-form-page">
-     <header class="rm-form-header">
-          <div>
-               <div class="rm-form-kicker">Parts Database</div>
-               <h1 class="rm-form-title">{{ action }} Part</h1>
-               <p class="rm-form-subtitle">
-                    Add or update aircraft part data and installation requirements.
-               </p>
-          </div>
-     </header>
      <form method="post" class="rm-part-form" novalidate>
           {% csrf_token %}
           <section class="rm-form-panel">
-               <div class="rm-panel-title">Part Information</div>
+               <div class="rm-panel-title">
+                    {% if action == "Create" %}
+                    Add Part
+                    {% else %}
+                    Edit Part
+                    {% endif %}
+               </div>
                <div class="rm-form-grid rm-form-grid-2">
                     <div class="rm-field">
-                         {{ part_form.part_number.label_tag }}
+                         <label for="{{ part_form.part_number.id_for_label }}">
+                              Part Number
+                         </label>
                          {{ part_form.part_number|add_class:"form-control" }}
                     </div>
                     <div class="rm-field">
-                         {{ part_form.description.label_tag }}
+                         <label for="{{ part_form.description.id_for_label }}">
+                              Description
+                         </label>
                          {{ part_form.description|add_class:"form-control" }}
                     </div>
-               </div>
-               <div class="rm-form-grid rm-form-grid-3">
-                    <div class="rm-field">
-                         {{ part_form.sta.label_tag }}
-                         {{ part_form.sta|add_class:"form-control" }}
-                    </div>
-                    <div class="rm-field">
-                         {{ part_form.bl.label_tag }}
-                         {{ part_form.bl|add_class:"form-control" }}
-                    </div>
-                    <div class="rm-field">
-                         {{ part_form.wl.label_tag }}
-                         {{ part_form.wl|add_class:"form-control" }}
+                    <div class="rm-field rm-field-full">
+                         <label for="{{ part_form.notes.id_for_label }}">
+                              Notes
+                         </label>
+                         {{ part_form.notes|add_class:"form-control" }}
                     </div>
                </div>
-               <div class="rm-form-grid rm-form-grid-3">
-                    <div class="rm-field">
-                         {{ part_form.dwg.label_tag }}
-                         {{ part_form.dwg|add_class:"form-control" }}
-                         {% if part_form.instance.dwg %}
-                         <a href="https://wsso-support.web.boeing.com:2016/redirect.html?URL=https://redars.web.boeing.com/redars/services/DisplayPSEDocUnitList?documentNumber={{ part_form.instance.dwg }}"
-                              target="_blank" class="rm-helper-link">
-                              View in REDARS
-                         </a>
-                         {% endif %}
-                    </div>
-                    <div class="rm-field">
-                         {{ part_form.sht.label_tag }}
-                         {{ part_form.sht|add_class:"form-control" }}
-                    </div>
-                    <div class="rm-field">
-                         {{ part_form.rev.label_tag }}
-                         {{ part_form.rev|add_class:"form-control" }}
-                    </div>
-               </div>
-               <div class="rm-field">
-                    {{ part_form.notes.label_tag }}
-                    {{ part_form.notes|add_class:"form-control" }}
-               </div>
-               {% if part_form.errors %}
-               <div class="alert alert-danger mt-3">
-                    {{ part_form.errors }}
-               </div>
-               {% endif %}
           </section>
           <section class="rm-form-panel">
-               <div class="rm-panel-title">Installation Requirements</div>
+               <div class="rm-panel-title">
+                    Install Locations
+               </div>
+               {{ installation_formset.management_form }}
+               {% if installation_formset.non_form_errors %}
+               <div class="alert alert-danger mt-3">
+                    {{ installation_formset.non_form_errors }}
+               </div>
+               {% endif %}
+               <div class="rm-requirements-formset">
+                    {% for form in installation_formset %}
+                    <div class="rm-requirement-editor">
+                         {{ form.id }}
+                         {% if form.errors %}
+                         <div class="alert alert-danger mt-2">
+                              {{ form.errors }}
+                         </div>
+                         {% endif %}
+                         <div class="rm-form-grid rm-form-grid-2">
+                              <div class="rm-field">
+                                   <label for="{{ form.name.id_for_label }}">
+                                        Location Name
+                                   </label>
+                                   {{ form.name }}
+                              </div>
+                              <div class="rm-field">
+                                   <label for="{{ form.sta.id_for_label }}">
+                                        STA
+                                   </label>
+                                   {{ form.sta }}
+                              </div>
+                              <div class="rm-field">
+                                   <label for="{{ form.bl.id_for_label }}">
+                                        BL
+                                   </label>
+                                   {{ form.bl }}
+                              </div>
+                              <div class="rm-field">
+                                   <label for="{{ form.wl.id_for_label }}">
+                                        WL
+                                   </label>
+                                   {{ form.wl }}
+                              </div>
+                              <div class="rm-field rm-field-full">
+                                   <label for="{{ form.notes.id_for_label }}">
+                                        Location Notes
+                                   </label>
+                                   {{ form.notes }}
+                              </div>
+                         </div>
+                         <div class="mt-4">
+                              <h5>Drawing References</h5>
+                              {% for install_id, drawing_formset in drawing_formsets %}
+                              {% if install_id == form.instance.pk %}
+                              {{ drawing_formset.management_form }}
+                              {% for dwg_form in drawing_formset %}
+                              <div class="rm-requirement-editor mt-3">
+                                   {{ dwg_form.id }}
+                                   <div class="rm-form-grid rm-form-grid-2">
+                                        <div class="rm-field">
+                                             <label>DWG</label>
+                                             {{ dwg_form.dwg }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Sheet</label>
+                                             {{ dwg_form.sht }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Revision</label>
+                                             {{ dwg_form.rev }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Note</label>
+                                             {{ dwg_form.note }}
+                                        </div>
+                                   </div>
+                                   {% if dwg_form.DELETE %}
+                                   <div class="delete-row">
+                                        <label class="form-check-label">
+                                             {{ dwg_form.DELETE }}
+                                             Delete this drawing reference
+                                        </label>
+                                   </div>
+                                   {% endif %}
+                              </div>
+                              {% endfor %}
+                              {% endif %}
+                              {% endfor %}
+                         </div>
+                         {% if form.DELETE %}
+                         <div class="delete-row">
+                              <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
+                                   {{ form.DELETE }}
+                                   Delete this install location
+                              </label>
+                         </div>
+                         {% endif %}
+                    </div>
+                    {% endfor %}
+               </div>
+          </section>
+          <section class="rm-form-panel">
+               <div class="rm-panel-title">
+                    Installation Requirements
+               </div>
                {{ formset.management_form }}
                {% if formset.non_form_errors %}
                <div class="alert alert-danger mt-3">
@@ -101,71 +169,25 @@
                               </div>
                          </div>
                          {% if action != "Create" %}
-                         <div class="rm-delete-row">
+                         <div class="delete-row">
                               <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
-                                   Delete Requirement
+                                   {{ form.DELETE }}
+                                   Delete this requirement
                               </label>
-                              {{ form.DELETE }}
                          </div>
                          {% endif %}
                     </div>
                     {% endfor %}
                </div>
-               <button type="button" id="add-form" class="btn btn-info rm-add-requirement-btn">
-                    Add Another Requirement
-               </button>
           </section>
           <div class="rm-form-actions">
-               <button type="submit" class="btn btn-success">
+               <button type="submit" class="btn btn-primary">
                     {{ action }}
                </button>
-               <a href="{% url 'home' %}" class="btn btn-secondary">
+               <a href="/" class="btn btn-secondary">
                     Cancel
                </a>
           </div>
-          <template id="empty-form-template">
-               <div class="rm-requirement-editor">
-                    <div class="rm-form-grid rm-form-grid-2">
-                         <div class="rm-field">
-                              <label for="{{ formset.empty_form.requirement_type.id_for_label }}">
-                                   Requirement Type
-                              </label>
-                              {{ formset.empty_form.requirement_type|add_class:"form-select" }}
-                         </div>
-                         <div class="rm-field">
-                              <label for="{{ formset.empty_form.note.id_for_label }}">
-                                   Note
-                              </label>
-                              {{ formset.empty_form.note|add_class:"form-control" }}
-                         </div>
-                    </div>
-                    {% if action != "Create" %}
-                    <div class="rm-delete-row">
-                         <label class="form-check-label" for="{{ formset.empty_form.DELETE.id_for_label }}">
-                              Delete Requirement
-                         </label>
-                         {{ formset.empty_form.DELETE }}
-                    </div>
-                    {% endif %}
-               </div>
-          </template>
-          <script>
-               document.addEventListener("DOMContentLoaded", function () {
-                    const addButton = document.getElementById("add-form");
-                    const formsetContainer = document.getElementById("formset-container");
-                    const totalForms = document.getElementById("id_form-TOTAL_FORMS");
-                    const emptyFormTemplate = document.getElementById("empty-form-template");
-                    if (!addButton || !formsetContainer || !totalForms || !emptyFormTemplate) {
-                         return;
-                    }
-                    addButton.addEventListener("click", function () {
-                         const currentFormCount = parseInt(totalForms.value, 10);
-                         const newFormHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, currentFormCount);
-                         formsetContainer.insertAdjacentHTML("beforeend", newFormHTML);
-                         totalForms.value = currentFormCount + 1;
-                    });
-               });
-          </script>
      </form>
 </section>
 {% endblock %}

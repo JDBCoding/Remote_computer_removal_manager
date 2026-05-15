@@ -35,7 +35,11 @@
           </section>
           <section class="rm-form-panel">
                <div class="rm-panel-title">
+                    {% if action == "Create" %}
+                    Install Location
+                    {% else %}
                     Install Locations
+                    {% endif %}
                </div>
                {{ installation_formset.management_form }}
                {% if installation_formset.non_form_errors %}
@@ -53,12 +57,14 @@
                          </div>
                          {% endif %}
                          <div class="rm-form-grid rm-form-grid-2">
+                              {% if action != "Create" %}
                               <div class="rm-field">
                                    <label for="{{ form.name.id_for_label }}">
                                         Location Name
                                    </label>
                                    {{ form.name }}
                               </div>
+                              {% endif %}
                               <div class="rm-field">
                                    <label for="{{ form.sta.id_for_label }}">
                                         STA
@@ -86,6 +92,28 @@
                          </div>
                          <div class="mt-4">
                               <h5>Drawing References</h5>
+                              {% if action == "Create" %}
+                              <div class="rm-requirement-editor mt-3">
+                                   <div class="rm-form-grid rm-form-grid-2">
+                                        <div class="rm-field">
+                                             <label>DWG</label>
+                                             {{ primary_drawing_form.dwg }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Sheet</label>
+                                             {{ primary_drawing_form.sht }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Revision</label>
+                                             {{ primary_drawing_form.rev }}
+                                        </div>
+                                        <div class="rm-field">
+                                             <label>Note</label>
+                                             {{ primary_drawing_form.note }}
+                                        </div>
+                                   </div>
+                              </div>
+                              {% else %}
                               {% for install_id, drawing_formset in drawing_formsets %}
                               {% if install_id == form.instance.pk %}
                               {{ drawing_formset.management_form }}
@@ -122,8 +150,9 @@
                               {% endfor %}
                               {% endif %}
                               {% endfor %}
+                              {% endif %}
                          </div>
-                         {% if form.DELETE %}
+                         {% if form.DELETE and action != "Create" %}
                          <div class="delete-row">
                               <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
                                    {{ form.DELETE }}

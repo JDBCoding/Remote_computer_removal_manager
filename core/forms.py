@@ -51,6 +51,21 @@ class DrawingReferenceForm(forms.ModelForm):
            "rev": forms.TextInput(attrs={"class": "form-control"}),
            "note": forms.TextInput(attrs={"class": "form-control"}),
        }
+       
+class PrimaryDrawingReferenceForm(forms.ModelForm):
+  class Meta:
+      model = DrawingReference
+      fields = ["dwg", "sht", "rev", "note"]
+      widgets = {
+          "dwg": forms.TextInput(attrs={"class": "form-control"}),
+          "sht": forms.TextInput(attrs={"class": "form-control"}),
+          "rev": forms.TextInput(attrs={"class": "form-control"}),
+          "note": forms.TextInput(attrs={"class": "form-control"}),
+      }
+  def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+      for field in self.fields.values():
+          field.required = False
 
 PartInstallationFormSet = inlineformset_factory(
    Part,

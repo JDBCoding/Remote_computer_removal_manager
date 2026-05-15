@@ -5,7 +5,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.db.models import Case, When, Value, IntegerField
-from .models import Part, InstallationRequirement, PlanningRequest, PlanningRequestItem
+from .models import (
+    Part,
+    PartInstallation,
+    DrawingReference,
+    InstallationRequirement,
+    PlanningRequest,
+    PlanningRequestItem,
+)
 from .forms import (
     PartForm,
     PartInstallationFormSet,
@@ -15,6 +22,7 @@ from .forms import (
     PlanningRequestForm,
     PlanningRequestItemFormSet,
     InstallationRequirementCreateForm,
+    PrimaryDrawingReferenceForm,
 )
 
 logger = logging.getLogger(__name__)
@@ -64,45 +72,113 @@ def how_to_use(request):
     return render(request, "core/how_to_use.html")
 
 
+
 def add_part(request):
-    if request.method == "POST":
-        part_form = PartForm(request.POST)
-        formsset = InstallationRequirementFormSet(request.POST, prefix="form")
-        installation_formset = PartInstallationCreateFormSet(
-            request.POST, prefix="install"
-        )
-        if (
-            part_form.is_valid()
-            and formsset.is_valid()
-            and installation_formset.is_valid()
-        ):
-            part = part_form.save()
-            installation_formset.instance = part
-            installation_formset.save()
-            formsset.instance = part
-            formsset.save()
-            return redirect(f"/?part_number={part.part_number}")
-        else:
-            logger.warning("Part Form Errors: %s", part_form.errors)
-            logger.warning("Requirement Formset Errors: %s", formsset.errors)
-            logger.warning(
-                "Installation Formset Errors: %s", installation_formset.errors
-            )
-    else:
-        part_form = PartForm()
-        formsset = InstallationRequirementFormSet(prefix="form")
-        installation_formset = PartInstallationCreateFormSet(prefix="install")
-    return render(
-        request,
-        "core/part_form.html",
-        {
-            "part_form": part_form,
-            "formset": formsset,
-            "installation_formset": installation_formset,
-            "drawing_formsets": [],
-            "action": "Create",
-        },
-    )
+   if request.method == "POST":
+       submitted_part_number = request.POST.get("part_number", "").strip().upper()
+
+       existing_part = None
+       if submitted_part_number:
+           existing_part = Part.objects.filter(part_number=submitted_part_number).first()
+
+       if existing_part:
+           return render(
+               request,
+               "core/part_exists.html",
+               {
+                   "part": existing_part,
+               },
+           )
+
+       part_form = PartForm(request.POST)
+
+       formsset = InstallationRequirementFormSet(
+           request.POST,
+           prefix="form"
+       )
+
+       installation_formset = PartInstallationCreateFormSet(
+           request.POST,
+           prefix="install"
+       )
+
+       primary_drawing_form = PrimaryDrawingReferenceForm(
+           request.POST,
+           prefix="primary_dwg"
+       )
+
+       if (
+           part_form.is_valid()
+           and formsset.is_valid()
+           and installation_formset.is_valid()
+           and primary_drawing_form.is_valid()
+       ):
+           part = part_form.save()
+
+           installation = part.ensure_default_installation()
+
+           install_form = installation_formset.forms[0]
+
+           if install_form.cleaned_data:
+               installation.name = "DEFAULT"
+               installation.sta = install_form.cleaned_data.get("sta") or ""
+               installation.bl = install_form.cleaned_data.get("bl") or ""
+               installation.wl = install_form.cleaned_data.get("wl") or ""
+               installation.notes = install_form.cleaned_data.get("notes") or ""
+               installation.save()
+
+           drawing_data = primary_drawing_form.cleaned_data
+
+           if drawing_data.get("dwg"):
+               DrawingReference.objects.create(
+                   installation=installation,
+                   dwg=drawing_data.get("dwg") or "",
+                   sht=drawing_data.get("sht") or "",
+                   rev=drawing_data.get("rev") or "",
+                   note=drawing_data.get("note") or "",
+               )
+
+           formsset.instance = part
+           formsset.save()
+
+           return redirect(f"/?part_number={part.part_number}")
+
+       else:
+           logger.warning("Part Form Errors: %s", part_form.errors)
+           logger.warning("Requirement Formset Errors: %s", formsset.errors)
+           logger.warning("Installation Formset Errors: %s", installation_formset.errors)
+           logger.warning("Primary Drawing Form Errors: %s", primary_drawing_form.errors)
+
+   else:
+       part_form = PartForm()
+
+       formsset = InstallationRequirementFormSet(
+           prefix="form"
+       )
+
+       installation_formset = PartInstallationCreateFormSet(
+           prefix="install"
+       )
+
+       primary_drawing_form = PrimaryDrawingReferenceForm(
+           prefix="primary_dwg"
+       )
+
+   return render(
+       request,
+       "core/part_form.html",
+       {
+           "part_form": part_form,
+           "formset": formsset,
+           "installation_formset": installation_formset,
+           "drawing_formsets": [],
+           "primary_drawing_form": primary_drawing_form,
+           "action": "Create",
+       },
+   )
+
+
+
 
 def edit_part(request, pk):
     part = get_object_or_404(Part, pk=pk)

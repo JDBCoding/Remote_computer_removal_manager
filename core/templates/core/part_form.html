@@ -6,7 +6,7 @@
           {% csrf_token %}
           <section class="rm-form-panel">
                <div class="rm-panel-title">
-                    {% if action == "Create" %}
+                    {% if show_location_name %}
                     Add Part
                     {% else %}
                     Edit Part

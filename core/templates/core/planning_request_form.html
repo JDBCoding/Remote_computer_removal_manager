@@ -1,101 +1,127 @@
 {% extends "core/base.html" %}
+
 {% block content %}
-<section class="rm-planning-page">
-   <header class="rm-form-header">
-      <div>
-         <div class="rm-form-kicker">Planning Workflow</div>
-         <h1 class="rm-form-title">Create Planning Request</h1>
-         <p class="rm-form-subtitle">
-            Provide removal log job, select parts, assign operation numbers, and submit planning request package.
-         </p>
-      </div>
-   </header>
-   <form method="post" class="rm-planning-form">
+<section class="rm-form-page">
+   <form method="post" class="rm-part-form">
+
       {% csrf_token %}
       <section class="rm-form-panel">
-         <div class="rm-panel-title">Request Information</div>
+         <div class="rm-panel-title">
+
+            Create Planning Request
+         </div>
          <div class="rm-form-grid rm-form-grid-2">
             <div class="rm-field">
-               <label class="form-label">Removal Collector Number</label>
-               <input type="text" name="job_number" class="form-control" required>
+               <label for="job_number">Job Number</label>
+               <input type="text" name="job_number" id="job_number" class="form-control">
             </div>
-            <div class="rm-field">
-               <label class="form-label">Notes / Special Instructions</label>
-               <textarea name="notes" class="form-control" rows="3"></textarea>
+            <div class="rm-field rm-field-full">
+               <label for="notes">General Notes</label>
+               <textarea name="notes" id="notes" class="form-control" rows="2"></textarea>
             </div>
          </div>
       </section>
       <section class="rm-form-panel">
-         <div class="rm-panel-title">Select Parts</div>
-         <div class="rm-field rm-part-search-wrap">
-            <label for="partSearch" class="form-label">Search Parts</label>
-            <input id="partSearch" type="text" class="form-control" placeholder="Type part number or description..."
-               autocomplete="off">
+         <div class="rm-panel-title">
+
+            Select Parts / Install Locations
          </div>
-         <div class="rm-planning-part-list">
+         <p class="text-muted">
+
+            Select the part location or locations you want planning to address, then enter the operation number for each
+            selected item.
+         </p>
+         <div class="rm-requirements-formset">
+
             {% for part in parts %}
-            <div class="rm-planning-part-row part-row" data-search="{{ part.part_number }} {{ part.description }}">
-               <div class="rm-planning-part-main">
-                  <div class="form-check">
-                     <input class="form-check-input part-check" type="checkbox" id="part_{{ part.id }}" name="parts"
-                        value="{{ part.id }}" data-opwrap="opwrap_{{ part.id }}">
-                     <label class="form-check-label" for="part_{{ part.id }}">
-                        <span class="rm-planning-part-number">{{ part.part_number }}</span>
-                        <span class="rm-planning-part-desc">{{ part.description }}</span>
+            <div class="rm-requirement-editor">
+               <h5>
+
+                  {{ part.part_number }} - {{ part.description }}
+               </h5>
+
+               {% for installation in part.installations.all %}
+               <div class="rm-requirement-editor mt-3">
+                  <div class="form-check mb-3">
+                     <input class="form-check-input" type="checkbox" name="installations" value="{{ installation.id }}"
+                        id="installation_{{ installation.id }}">
+                     <label class="form-check-label" for="installation_{{ installation.id }}">
+                        <strong>{{ part.part_number }}</strong>
+
+                        {% if part.installations.all|length > 1 %}
+
+                        -
+
+                        {% if installation.name and installation.name != "DEFAULT" %}
+
+                        {{ installation.name }}
+
+                        {% else %}
+
+                        Location {{ forloop.counter }}
+
+                        {% endif %}
+
+                        {% endif %}
+
+                        {% if installation.sta or installation.bl or installation.wl %}
+
+                        | STA {{ installation.sta }} / BL {{ installation.bl }} / WL {{ installation.wl }}
+
+                        {% endif %}
                      </label>
                   </div>
+                  <div class="rm-form-grid rm-form-grid-2">
+                     <div class="rm-field">
+                        <label for="op_{{ installation.id }}">Operation Number</label>
+                        <input type="text" name="op_{{ installation.id }}" id="op_{{ installation.id }}"
+                           class="form-control">
+                     </div>
+                     <div class="rm-field">
+                        <label>Reference DWGs</label>
+                        <div class="form-control" style="height:auto; min-height:38px;">
+
+                           {% for ref in installation.drawing_refs.all %}
+                           <div>DWG {{ ref.dwg }} | SHT {{ ref.sht }} | REV {{ ref.rev }}</div>
+
+                           {% empty %}
+                           <div class="text-muted">No DWG refs listed.</div>
+
+                           {% endfor %}
+                        </div>
+                     </div>
+                  </div>
                </div>
-               <div id="opwrap_{{ part.id }}" class="rm-op-input-wrap" hidden>
-                  <label class="rm-op-label">Operation</label>
-                  <input type="text" class="form-control form-control-sm" name="op_{{ part.id }}"
-                     placeholder="Enter OP for {{ part.part_number }}">
+
+               {% empty %}
+               <div class="alert alert-warning">
+
+                  No install location found for this part.
                </div>
+
+               {% endfor %}
             </div>
+
+            {% empty %}
+            <div class="alert alert-warning">
+
+               No parts found in the database.
+            </div>
+
             {% endfor %}
          </div>
       </section>
       <div class="rm-form-actions">
-         <button type="submit" class="btn btn-primary px-4">
-            Submit Planning Request
+         <button type="submit" class="btn btn-primary">
+
+            Build Planning Request
          </button>
-         <a class="btn btn-secondary px-4" href="{% url 'home' %}">
-            Home
+         <a href="/" class="btn btn-secondary">
+
+            Cancel
          </a>
       </div>
    </form>
 </section>
-<script>
-   document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll('[id^="opwrap_"]').forEach(function (wrap) {
-         wrap.hidden = true;
-      });
-      document.querySelectorAll(".part-check").forEach(function (cb) {
-         const wrapId = cb.getAttribute("data-opwrap");
-         const wrap = document.getElementById(wrapId);
-         if (!wrap) return;
-         const opInput = wrap.querySelector('input[type="text"]');
-         function sync() {
-            const isChecked = cb.checked;
-            wrap.hidden = !isChecked;
-            if (opInput) {
-               opInput.required = isChecked;
-               if (!isChecked) opInput.value = "";
-            }
-         }
-         cb.addEventListener("change", sync);
-         sync();
-      });
-      const input = document.getElementById("partSearch");
-      const rows = document.querySelectorAll(".part-row");
-      if (input) {
-         input.addEventListener("input", function () {
-            const query = this.value.toLowerCase().trim();
-            rows.forEach(row => {
-               const text = row.dataset.search.toLowerCase();
-               row.style.display = text.includes(query) ? "" : "none";
-            });
-         });
-      }
-   });
-</script>
+
 {% endblock %}

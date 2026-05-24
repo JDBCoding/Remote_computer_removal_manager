@@ -225,6 +225,15 @@ def edit_part(request, pk):
     )
 
 
+def add_install_location(request, pk):
+    part = get_object_or_404(Part, pk=pk)
+    location_count = part.installations.count() + 1
+    PartInstallation.objects.create(
+        part=part, name=f"LOCATION {location_count}", sta="", bl="", wl="", notes=""
+    )
+    return redirect("edit_part", pk=part.pk)
+
+
 def delete_part(request, pk):
     part = get_object_or_404(Part, pk=pk)
     if request.method == "POST":
@@ -317,47 +326,114 @@ def requirement_edit(request, pk):
 
 
 def planning_request_create(request):
-    parts = Part.objects.sorted_for_planning()
+
+    parts = Part.objects.sorted_for_planning().prefetch_related(
+        "installations",
+        "installations__drawing_refs",
+        "requirements",
+    )
+
     if request.method == "POST":
+
         job_number = (request.POST.get("job_number") or "").strip()
+
         notes = (request.POST.get("notes") or "").strip()
-        selected_part_ids = request.POST.getlist("parts")
-        selected_parts = Part.objects.filter(id__in=selected_part_ids)
-        # Preserve the checkbox order as the user selected them
-        # (Django won't guarantee IN() ordering)
-        selected_parts_by_id = {str(p.id): p for p in selected_parts}
-        ordered_selected_parts = [
-            selected_parts_by_id[pid]
-            for pid in selected_part_ids
-            if pid in selected_parts_by_id
-        ]
-        planning_message_lines = []
-        planning_message_lines.append(f"Job Number: {job_number}")
-        if notes:
-            planning_message_lines.append(f"Notes: {notes}")
-        planning_message_lines.append("")
-        for part in ordered_selected_parts:
-            op = (request.POST.get(f"op_{part.id}") or "").strip()
-            planning_message_lines.append(f"OP: {op}")
-            planning_message_lines.append(f"Part: {part.part_number}")
-            planning_message_lines.append(
-                f"DWG: {part.dwg} | SHT: {part.sht} | REV: {part.rev}"
+
+        selected_installation_ids = request.POST.getlist("installations")
+
+        installations = (
+            PartInstallation.objects.filter(id__in=selected_installation_ids)
+            .select_related("part")
+            .prefetch_related(
+                "drawing_refs",
+                "part__requirements",
             )
+        )
+
+        installations_by_id = {
+            str(installation.id): installation for installation in installations
+        }
+
+        ordered_installations = [
+            installations_by_id[installation_id]
+            for installation_id in selected_installation_ids
+            if installation_id in installations_by_id
+        ]
+
+        planning_message_lines = []
+
+        if job_number:
+
+            planning_message_lines.append(f"Job Number: {job_number}")
+
+        if notes:
+
+            planning_message_lines.append(f"Notes: {notes}")
+
+        if job_number or notes:
+
+            planning_message_lines.append("")
+
+        for installation in ordered_installations:
+
+            part = installation.part
+
+            op = (request.POST.get(f"op_{installation.id}") or "").strip()
+
+            planning_message_lines.append(f"OP: {op}")
+
+            planning_message_lines.append(f"Part: {part.part_number}")
+
+            if installation.name and installation.name != "DEFAULT":
+
+                planning_message_lines.append(f"Location: {installation.name}")
+
+            planning_message_lines.append(
+                f"STA: {installation.sta} | BL: {installation.bl} | WL: {installation.wl}"
+            )
+
+            drawing_refs = installation.drawing_refs.all()
+
+            if drawing_refs:
+
+                planning_message_lines.append("Reference DWGs:")
+
+                for ref in drawing_refs:
+
+                    planning_message_lines.append(
+                        f"- DWG: {ref.dwg} | SHT: {ref.sht} | REV: {ref.rev}"
+                    )
+
+            else:
+
+                planning_message_lines.append("Reference DWGs: None listed")
+
             planning_message_lines.append(
                 "Planning please add the following data collect/s:"
             )
+
             requirements = part.requirements.all()
+
             if requirements.exists():
+
                 for req in requirements:
+
                     line = f"- {req.requirement_type}"
+
                     if req.note:
+
                         line += f" - {req.note}"
+
                     planning_message_lines.append(line)
+
             else:
+
                 planning_message_lines.append("- (No requirements listed)")
-            planning_message_lines.append("")  # blank line between parts
+
+            planning_message_lines.append("")
+
         planning_message = "\n".join(planning_message_lines).strip()
-        # Used for the mailto subject
+
         email_subject = f"Planning Request - Job {job_number}".strip()
 
         return render(
@@ -369,8 +445,13 @@ def planning_request_create(request):
             },
         )
 
-    # GET
-    return render(request, "core/planning_request_form.html", {"parts": parts})
+    return render(
+        request,
+        "core/planning_request_form.html",
+        {
+            "parts": parts,
+        },
+    )
 
 
 def planning_request_detail(request, pk):

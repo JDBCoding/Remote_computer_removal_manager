@@ -1,222 +1,326 @@
 {% extends "core/base.html" %}
+
 {% load widget_tweaks %}
+
 {% block content %}
 <section class="rm-form-page">
      <form method="post" class="rm-part-form" novalidate>
+
           {% csrf_token %}
           <section class="rm-form-panel">
                <div class="rm-panel-title">
-                    {% if show_location_name %}
+
+                    {% if action == "Create" %}
+
                     Add Part
+
                     {% else %}
+
                     Edit Part
+
                     {% endif %}
                </div>
                <div class="rm-form-grid rm-form-grid-2">
                     <div class="rm-field">
                          <label for="{{ part_form.part_number.id_for_label }}">
+
                               Part Number
                          </label>
+
                          {{ part_form.part_number|add_class:"form-control" }}
                     </div>
                     <div class="rm-field">
                          <label for="{{ part_form.description.id_for_label }}">
+
                               Description
                          </label>
+
                          {{ part_form.description|add_class:"form-control" }}
                     </div>
                     <div class="rm-field rm-field-full">
                          <label for="{{ part_form.notes.id_for_label }}">
+
                               Notes
                          </label>
+
                          {{ part_form.notes|add_class:"form-control" }}
                     </div>
                </div>
           </section>
           <section class="rm-form-panel">
                <div class="rm-panel-title">
-                    {% if action == "Create" %}
-                    Install Location
-                    {% else %}
+
+                    {% if show_location_name %}
+
                     Install Locations
+
+                    {% else %}
+
+                    Install Location
+
                     {% endif %}
                </div>
+
                {{ installation_formset.management_form }}
+
                {% if installation_formset.non_form_errors %}
                <div class="alert alert-danger mt-3">
+
                     {{ installation_formset.non_form_errors }}
                </div>
+
                {% endif %}
                <div class="rm-requirements-formset">
+
                     {% for form in installation_formset %}
                     <div class="rm-requirement-editor">
+
                          {{ form.id }}
+
                          {% if form.errors %}
                          <div class="alert alert-danger mt-2">
+
                               {{ form.errors }}
                          </div>
+
                          {% endif %}
                          <div class="rm-form-grid rm-form-grid-2">
-                              {% if action != "Create" %}
+
+                              {% if show_location_name %}
                               <div class="rm-field">
                                    <label for="{{ form.name.id_for_label }}">
+
                                         Location Name
                                    </label>
+
                                    {{ form.name }}
                               </div>
+
                               {% endif %}
                               <div class="rm-field">
                                    <label for="{{ form.sta.id_for_label }}">
+
                                         STA
                                    </label>
+
                                    {{ form.sta }}
                               </div>
                               <div class="rm-field">
                                    <label for="{{ form.bl.id_for_label }}">
+
                                         BL
                                    </label>
+
                                    {{ form.bl }}
                               </div>
                               <div class="rm-field">
                                    <label for="{{ form.wl.id_for_label }}">
+
                                         WL
                                    </label>
+
                                    {{ form.wl }}
                               </div>
+
+                              {% if show_location_name %}
                               <div class="rm-field rm-field-full">
                                    <label for="{{ form.notes.id_for_label }}">
+
                                         Location Notes
                                    </label>
+
                                    {{ form.notes }}
                               </div>
+
+                              {% endif %}
                          </div>
                          <div class="mt-4">
                               <h5>Drawing References</h5>
+
                               {% if action == "Create" %}
                               <div class="rm-requirement-editor mt-3">
                                    <div class="rm-form-grid rm-form-grid-2">
                                         <div class="rm-field">
                                              <label>DWG</label>
+
                                              {{ primary_drawing_form.dwg }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Sheet</label>
+
                                              {{ primary_drawing_form.sht }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Revision</label>
+
                                              {{ primary_drawing_form.rev }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Note</label>
+
                                              {{ primary_drawing_form.note }}
                                         </div>
                                    </div>
                               </div>
+
                               {% else %}
+
                               {% for install_id, drawing_formset in drawing_formsets %}
+
                               {% if install_id == form.instance.pk %}
+
                               {{ drawing_formset.management_form }}
+
                               {% for dwg_form in drawing_formset %}
                               <div class="rm-requirement-editor mt-3">
+
                                    {{ dwg_form.id }}
                                    <div class="rm-form-grid rm-form-grid-2">
                                         <div class="rm-field">
                                              <label>DWG</label>
+
                                              {{ dwg_form.dwg }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Sheet</label>
+
                                              {{ dwg_form.sht }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Revision</label>
+
                                              {{ dwg_form.rev }}
                                         </div>
                                         <div class="rm-field">
                                              <label>Note</label>
+
                                              {{ dwg_form.note }}
                                         </div>
                                    </div>
+
                                    {% if dwg_form.DELETE %}
                                    <div class="delete-row">
                                         <label class="form-check-label">
+
                                              {{ dwg_form.DELETE }}
+
                                              Delete this drawing reference
                                         </label>
                                    </div>
+
                                    {% endif %}
                               </div>
+
                               {% endfor %}
+
                               {% endif %}
+
                               {% endfor %}
+
                               {% endif %}
                          </div>
+
                          {% if form.DELETE and action != "Create" %}
                          <div class="delete-row">
                               <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
+
                                    {{ form.DELETE }}
+
                                    Delete this install location
                               </label>
                          </div>
+
                          {% endif %}
                     </div>
+
                     {% endfor %}
                </div>
+
+               {% if action != "Create" %}
+               <div class="mt-3">
+                    <a href="{% url 'add_install_location' part.pk %}" class="btn btn-secondary">
+
+                         + Add Another Install Location
+                    </a>
+               </div>
+
+               {% endif %}
           </section>
           <section class="rm-form-panel">
                <div class="rm-panel-title">
+
                     Installation Requirements
                </div>
+
                {{ formset.management_form }}
+
                {% if formset.non_form_errors %}
                <div class="alert alert-danger mt-3">
+
                     {{ formset.non_form_errors }}
                </div>
+
                {% endif %}
                <div id="formset-container" class="rm-requirements-formset">
+
                     {% for form in formset %}
                     <div class="rm-requirement-editor">
+
                          {{ form.id }}
+
                          {% if form.errors %}
                          <div class="alert alert-danger mt-2">
+
                               {{ form.errors }}
                          </div>
+
                          {% endif %}
                          <div class="rm-form-grid rm-form-grid-2">
                               <div class="rm-field">
                                    <label for="{{ form.requirement_type.id_for_label }}">
+
                                         Requirement Type
                                    </label>
+
                                    {{ form.requirement_type|add_class:"form-select" }}
                               </div>
                               <div class="rm-field">
                                    <label for="{{ form.note.id_for_label }}">
+
                                         Note
                                    </label>
+
                                    {{ form.note|add_class:"form-control" }}
                               </div>
                          </div>
+
                          {% if action != "Create" %}
                          <div class="delete-row">
                               <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
+
                                    {{ form.DELETE }}
+
                                    Delete this requirement
                               </label>
                          </div>
+
                          {% endif %}
                     </div>
+
                     {% endfor %}
                </div>
           </section>
           <div class="rm-form-actions">
                <button type="submit" class="btn btn-primary">
+
                     {{ action }}
                </button>
                <a href="/" class="btn btn-secondary">
+
                     Cancel
                </a>
           </div>
      </form>
 </section>
+
 {% endblock %}

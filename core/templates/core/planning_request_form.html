@@ -28,21 +28,20 @@
          </div>
          <p class="text-muted">
 
-            Select the part location or locations you want planning to address, then enter the operation number for each
-            selected item.
+            Select the install location or locations planning should address.
          </p>
          <div class="rm-requirements-formset">
 
             {% for part in parts %}
             <div class="rm-requirement-editor">
-               <h5>
+               <h5 class="mb-3">
 
                   {{ part.part_number }} - {{ part.description }}
                </h5>
 
                {% for installation in part.installations.all %}
-               <div class="rm-requirement-editor mt-3">
-                  <div class="form-check mb-3">
+               <div class="rm-planning-location-card">
+                  <div class="rm-planning-check-row">
                      <input class="form-check-input" type="checkbox" name="installations" value="{{ installation.id }}"
                         id="installation_{{ installation.id }}">
                      <label class="form-check-label" for="installation_{{ installation.id }}">
@@ -66,26 +65,46 @@
 
                         {% if installation.sta or installation.bl or installation.wl %}
 
-                        | STA {{ installation.sta }} / BL {{ installation.bl }} / WL {{ installation.wl }}
+                        | STA {{ installation.sta }}
+
+                        | BL {{ installation.bl }}
+
+                        | WL {{ installation.wl }}
 
                         {% endif %}
                      </label>
                   </div>
                   <div class="rm-form-grid rm-form-grid-2">
                      <div class="rm-field">
-                        <label for="op_{{ installation.id }}">Operation Number</label>
+                        <label for="op_{{ installation.id }}">
+
+                           Operation Number
+                        </label>
                         <input type="text" name="op_{{ installation.id }}" id="op_{{ installation.id }}"
                            class="form-control">
                      </div>
                      <div class="rm-field">
-                        <label>Reference DWGs</label>
+                        <label>
+
+                           Reference DWGs
+                        </label>
                         <div class="form-control" style="height:auto; min-height:38px;">
 
                            {% for ref in installation.drawing_refs.all %}
-                           <div>DWG {{ ref.dwg }} | SHT {{ ref.sht }} | REV {{ ref.rev }}</div>
+                           <div>
+
+                              DWG {{ ref.dwg }}
+
+                              | SHT {{ ref.sht }}
+
+                              | REV {{ ref.rev }}
+                           </div>
 
                            {% empty %}
-                           <div class="text-muted">No DWG refs listed.</div>
+                           <div class="text-muted">
+
+                              No DWG refs listed.
+                           </div>
 
                            {% endfor %}
                         </div>

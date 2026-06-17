@@ -90,63 +90,77 @@ def add_part(request):
             )
         part_form = PartForm(request.POST)
         formsset = InstallationRequirementFormSet(request.POST, prefix="form")
-        installation_formset = PartInstallationCreateFormSet(
-            request.POST, prefix="install"
-        )
-        primary_drawing_form = PrimaryDrawingReferenceForm(
-            request.POST, prefix="primary_dwg"
-        )
-        if (
-            part_form.is_valid()
-            and formsset.is_valid()
-            and installation_formset.is_valid()
-            and primary_drawing_form.is_valid()
-        ):
+        if part_form.is_valid() and formsset.is_valid():
             part = part_form.save()
-            installation = part.ensure_default_installation()
-            install_form = installation_formset.forms[0]
-            if install_form.cleaned_data:
-                installation.name = "DEFAULT"
-                installation.sta = install_form.cleaned_data.get("sta") or ""
-                installation.bl = install_form.cleaned_data.get("bl") or ""
-                installation.wl = install_form.cleaned_data.get("wl") or ""
-                installation.notes = install_form.cleaned_data.get("notes") or ""
-                installation.save()
-            drawing_data = primary_drawing_form.cleaned_data
-            if drawing_data.get("dwg"):
-                DrawingReference.objects.create(
-                    installation=installation,
-                    dwg=drawing_data.get("dwg") or "",
-                    sht=drawing_data.get("sht") or "",
-                    rev=drawing_data.get("rev") or "",
-                    note=drawing_data.get("note") or "",
+            location_count = int(request.POST.get("location_count", "1") or "1")
+            default_installation = part.ensure_default_installation()
+            for location_index in range(location_count):
+                location_name = request.POST.get(
+                    f"location_{location_index}_name", ""
+                ).strip()
+                sta = request.POST.get(f"location_{location_index}_sta", "").strip()
+                bl = request.POST.get(f"location_{location_index}_bl", "").strip()
+                wl = request.POST.get(f"location_{location_index}_wl", "").strip()
+                notes = request.POST.get(f"location_{location_index}_notes", "").strip()
+                if location_index == 0:
+                    installation = default_installation
+                    installation.name = location_name or "DEFAULT"
+                    installation.sta = sta
+                    installation.bl = bl
+                    installation.wl = wl
+                    installation.notes = notes
+                    installation.save()
+                else:
+                    installation = PartInstallation.objects.create(
+                        part=part,
+                        name=location_name or f"LOCATION {location_index + 1}",
+                        sta=sta,
+                        bl=bl,
+                        wl=wl,
+                        notes=notes,
+                    )
+                dwg_count = int(
+                    request.POST.get(f"location_{location_index}_dwg_count", "1") or "1"
                 )
+                for dwg_index in range(dwg_count):
+                    dwg = request.POST.get(
+                        f"location_{location_index}_dwg_{dwg_index}", ""
+                    ).strip()
+                    sht = request.POST.get(
+                        f"location_{location_index}_sht_{dwg_index}", ""
+                    ).strip()
+                    rev = request.POST.get(
+                        f"location_{location_index}_rev_{dwg_index}", ""
+                    ).strip()
+                    note = request.POST.get(
+                        f"location_{location_index}_dwg_note_{dwg_index}", ""
+                    ).strip()
+                    if dwg:
+                        DrawingReference.objects.create(
+                            installation=installation,
+                            dwg=dwg,
+                            sht=sht,
+                            rev=rev,
+                            note=note,
+                        )
             formsset.instance = part
             formsset.save()
             return redirect(f"/?part_number={part.part_number}")
         else:
             logger.warning("Part Form Errors: %s", part_form.errors)
             logger.warning("Requirement Formset Errors: %s", formsset.errors)
-            logger.warning(
-                "Installation Formset Errors: %s", installation_formset.errors
-            )
-            logger.warning(
-                "Primary Drawing Form Errors: %s", primary_drawing_form.errors
-            )
     else:
         part_form = PartForm()
         formsset = InstallationRequirementFormSet(prefix="form")
-        installation_formset = PartInstallationCreateFormSet(prefix="install")
-        primary_drawing_form = PrimaryDrawingReferenceForm(prefix="primary_dwg")
     return render(
         request,
         "core/part_form.html",
         {
             "part_form": part_form,
             "formset": formsset,
-            "installation_formset": installation_formset,
+            "installation_formset": None,
             "drawing_formsets": [],
-            "primary_drawing_form": primary_drawing_form,
+            "primary_drawing_form": None,
             "action": "Create",
             "show_location_name": False,
         },

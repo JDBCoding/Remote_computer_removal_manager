@@ -1,326 +1,542 @@
-{% extends "core/base.html" %}
-
-{% load widget_tweaks %}
-
-{% block content %}
+{% extends "core/base.html" %} {% load widget_tweaks %} {% block content %}
+<!-- TEST TEMPLATE CHANGE 123 -->
 <section class="rm-form-page">
-     <form method="post" class="rm-part-form" novalidate>
-
-          {% csrf_token %}
-          <section class="rm-form-panel">
-               <div class="rm-panel-title">
-
-                    {% if action == "Create" %}
-
-                    Add Part
-
-                    {% else %}
-
-                    Edit Part
-
-                    {% endif %}
-               </div>
-               <div class="rm-form-grid rm-form-grid-2">
-                    <div class="rm-field">
-                         <label for="{{ part_form.part_number.id_for_label }}">
-
-                              Part Number
-                         </label>
-
-                         {{ part_form.part_number|add_class:"form-control" }}
-                    </div>
-                    <div class="rm-field">
-                         <label for="{{ part_form.description.id_for_label }}">
-
-                              Description
-                         </label>
-
-                         {{ part_form.description|add_class:"form-control" }}
-                    </div>
-                    <div class="rm-field rm-field-full">
-                         <label for="{{ part_form.notes.id_for_label }}">
-
-                              Notes
-                         </label>
-
-                         {{ part_form.notes|add_class:"form-control" }}
-                    </div>
-               </div>
-          </section>
-          <section class="rm-form-panel">
-               <div class="rm-panel-title">
-
-                    {% if show_location_name %}
-
-                    Install Locations
-
-                    {% else %}
-
-                    Install Location
-
-                    {% endif %}
-               </div>
-
-               {{ installation_formset.management_form }}
-
-               {% if installation_formset.non_form_errors %}
-               <div class="alert alert-danger mt-3">
-
-                    {{ installation_formset.non_form_errors }}
-               </div>
-
-               {% endif %}
-               <div class="rm-requirements-formset">
-
-                    {% for form in installation_formset %}
-                    <div class="rm-requirement-editor">
-
-                         {{ form.id }}
-
-                         {% if form.errors %}
-                         <div class="alert alert-danger mt-2">
-
-                              {{ form.errors }}
-                         </div>
-
-                         {% endif %}
-                         <div class="rm-form-grid rm-form-grid-2">
-
-                              {% if show_location_name %}
-                              <div class="rm-field">
-                                   <label for="{{ form.name.id_for_label }}">
-
-                                        Location Name
-                                   </label>
-
-                                   {{ form.name }}
-                              </div>
-
-                              {% endif %}
-                              <div class="rm-field">
-                                   <label for="{{ form.sta.id_for_label }}">
-
-                                        STA
-                                   </label>
-
-                                   {{ form.sta }}
-                              </div>
-                              <div class="rm-field">
-                                   <label for="{{ form.bl.id_for_label }}">
-
-                                        BL
-                                   </label>
-
-                                   {{ form.bl }}
-                              </div>
-                              <div class="rm-field">
-                                   <label for="{{ form.wl.id_for_label }}">
-
-                                        WL
-                                   </label>
-
-                                   {{ form.wl }}
-                              </div>
-
-                              {% if show_location_name %}
-                              <div class="rm-field rm-field-full">
-                                   <label for="{{ form.notes.id_for_label }}">
-
-                                        Location Notes
-                                   </label>
-
-                                   {{ form.notes }}
-                              </div>
-
-                              {% endif %}
-                         </div>
-                         <div class="mt-4">
-                              <h5>Drawing References</h5>
-
-                              {% if action == "Create" %}
-                              <div class="rm-requirement-editor mt-3">
-                                   <div class="rm-form-grid rm-form-grid-2">
-                                        <div class="rm-field">
-                                             <label>DWG</label>
-
-                                             {{ primary_drawing_form.dwg }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Sheet</label>
-
-                                             {{ primary_drawing_form.sht }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Revision</label>
-
-                                             {{ primary_drawing_form.rev }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Note</label>
-
-                                             {{ primary_drawing_form.note }}
-                                        </div>
-                                   </div>
-                              </div>
-
-                              {% else %}
-
-                              {% for install_id, drawing_formset in drawing_formsets %}
-
-                              {% if install_id == form.instance.pk %}
-
-                              {{ drawing_formset.management_form }}
-
-                              {% for dwg_form in drawing_formset %}
-                              <div class="rm-requirement-editor mt-3">
-
-                                   {{ dwg_form.id }}
-                                   <div class="rm-form-grid rm-form-grid-2">
-                                        <div class="rm-field">
-                                             <label>DWG</label>
-
-                                             {{ dwg_form.dwg }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Sheet</label>
-
-                                             {{ dwg_form.sht }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Revision</label>
-
-                                             {{ dwg_form.rev }}
-                                        </div>
-                                        <div class="rm-field">
-                                             <label>Note</label>
-
-                                             {{ dwg_form.note }}
-                                        </div>
-                                   </div>
-
-                                   {% if dwg_form.DELETE %}
-                                   <div class="delete-row">
-                                        <label class="form-check-label">
-
-                                             {{ dwg_form.DELETE }}
-
-                                             Delete this drawing reference
-                                        </label>
-                                   </div>
-
-                                   {% endif %}
-                              </div>
-
-                              {% endfor %}
-
-                              {% endif %}
-
-                              {% endfor %}
-
-                              {% endif %}
-                         </div>
-
-                         {% if form.DELETE and action != "Create" %}
-                         <div class="delete-row">
-                              <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
-
-                                   {{ form.DELETE }}
-
-                                   Delete this install location
-                              </label>
-                         </div>
-
-                         {% endif %}
-                    </div>
-
-                    {% endfor %}
-               </div>
-
-               {% if action != "Create" %}
-               <div class="mt-3">
-                    <a href="{% url 'add_install_location' part.pk %}" class="btn btn-secondary">
-
-                         + Add Another Install Location
-                    </a>
-               </div>
-
-               {% endif %}
-          </section>
-          <section class="rm-form-panel">
-               <div class="rm-panel-title">
-
-                    Installation Requirements
-               </div>
-
-               {{ formset.management_form }}
-
-               {% if formset.non_form_errors %}
-               <div class="alert alert-danger mt-3">
-
-                    {{ formset.non_form_errors }}
-               </div>
-
-               {% endif %}
-               <div id="formset-container" class="rm-requirements-formset">
-
-                    {% for form in formset %}
-                    <div class="rm-requirement-editor">
-
-                         {{ form.id }}
-
-                         {% if form.errors %}
-                         <div class="alert alert-danger mt-2">
-
-                              {{ form.errors }}
-                         </div>
-
-                         {% endif %}
-                         <div class="rm-form-grid rm-form-grid-2">
-                              <div class="rm-field">
-                                   <label for="{{ form.requirement_type.id_for_label }}">
-
-                                        Requirement Type
-                                   </label>
-
-                                   {{ form.requirement_type|add_class:"form-select" }}
-                              </div>
-                              <div class="rm-field">
-                                   <label for="{{ form.note.id_for_label }}">
-
-                                        Note
-                                   </label>
-
-                                   {{ form.note|add_class:"form-control" }}
-                              </div>
-                         </div>
-
-                         {% if action != "Create" %}
-                         <div class="delete-row">
-                              <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
-
-                                   {{ form.DELETE }}
-
-                                   Delete this requirement
-                              </label>
-                         </div>
-
-                         {% endif %}
-                    </div>
-
-                    {% endfor %}
-               </div>
-          </section>
-          <div class="rm-form-actions">
-               <button type="submit" class="btn btn-primary">
-
-                    {{ action }}
-               </button>
-               <a href="/" class="btn btn-secondary">
-
-                    Cancel
-               </a>
+  <form method="post" class="rm-part-form" novalidate>
+    {% csrf_token %}
+    <section class="rm-form-panel">
+      <div class="rm-panel-title">
+        {% if action == "Create" %} Add Part {% else %} Edit Part {% endif %}
+      </div>
+      <div class="rm-form-grid rm-form-grid-2">
+        <div class="rm-field">
+          <label for="{{ part_form.part_number.id_for_label }}"
+            >Part Number</label
+          >
+          {{ part_form.part_number|add_class:"form-control" }}
+        </div>
+        <div class="rm-field">
+          <label for="{{ part_form.description.id_for_label }}"
+            >Description</label
+          >
+          {{ part_form.description|add_class:"form-control" }}
+        </div>
+        <div class="rm-field rm-field-full">
+          <label for="{{ part_form.notes.id_for_label }}">Notes</label>
+          {{ part_form.notes|add_class:"form-control" }}
+        </div>
+      </div>
+    </section>
+    <section class="rm-form-panel">
+      <div class="rm-panel-title">
+        {% if show_location_name %} Install Locations {% else %} Install
+        Location {% endif %}
+      </div>
+      {% if action == "Create" %}
+      <input
+        type="hidden"
+        name="location_count"
+        id="location_count"
+        value="1"
+      />
+      <div id="create-location-container" class="rm-requirements-formset">
+        <div
+          class="rm-requirement-editor create-location-card"
+          data-location-index="0"
+        >
+          <div class="rm-form-grid rm-form-grid-2">
+            <div class="rm-field location-name-field" style="display: none">
+              <label for="location_0_name">Location Name</label>
+              <input
+                type="text"
+                name="location_0_name"
+                id="location_0_name"
+                class="form-control"
+                value="DEFAULT"
+              />
+            </div>
+            <div class="rm-field">
+              <label for="location_0_sta">STA</label>
+              <input
+                type="text"
+                name="location_0_sta"
+                id="location_0_sta"
+                class="form-control"
+              />
+            </div>
+            <div class="rm-field">
+              <label for="location_0_bl">BL</label>
+              <input
+                type="text"
+                name="location_0_bl"
+                id="location_0_bl"
+                class="form-control"
+              />
+            </div>
+            <div class="rm-field">
+              <label for="location_0_wl">WL</label>
+              <input
+                type="text"
+                name="location_0_wl"
+                id="location_0_wl"
+                class="form-control"
+              />
+            </div>
+            <div
+              class="rm-field rm-field-full location-notes-field"
+              style="display: none"
+            >
+              <label for="location_0_notes">Location Notes</label>
+              <textarea
+                name="location_0_notes"
+                id="location_0_notes"
+                class="form-control"
+                rows="2"
+              ></textarea>
+            </div>
           </div>
-     </form>
+          <div class="mt-4">
+            <h5>Drawing References</h5>
+            <input
+              type="hidden"
+              name="location_0_dwg_count"
+              id="location_0_dwg_count"
+              value="1"
+            />
+            <div class="dwg-container" data-location-index="0">
+              <div
+                class="rm-requirement-editor mt-3 create-dwg-row"
+                data-dwg-index="0"
+              >
+                <div class="rm-form-grid rm-form-grid-2">
+                  <div class="rm-field">
+                    <label for="location_0_dwg_0">DWG</label>
+                    <input
+                      type="text"
+                      name="location_0_dwg_0"
+                      id="location_0_dwg_0"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="rm-field">
+                    <label for="location_0_sht_0">Sheet</label>
+                    <input
+                      type="text"
+                      name="location_0_sht_0"
+                      id="location_0_sht_0"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="rm-field">
+                    <label for="location_0_rev_0">Revision</label>
+                    <input
+                      type="text"
+                      name="location_0_rev_0"
+                      id="location_0_rev_0"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="rm-field">
+                    <label for="location_0_dwg_note_0">Note</label>
+                    <input
+                      type="text"
+                      name="location_0_dwg_note_0"
+                      id="location_0_dwg_note_0"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button
+                type="button"
+                class="btn btn-secondary add-dwg-btn"
+                data-location-index="0"
+              >
+                + Add Additional DWG Ref
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button type="button" id="add-location-btn" class="btn btn-secondary">
+          + Add Additional Part Location
+        </button>
+      </div>
+      {% else %} {{ installation_formset.management_form }} {% if
+      installation_formset.non_form_errors %}
+      <div class="alert alert-danger mt-3">
+        {{ installation_formset.non_form_errors }}
+      </div>
+      {% endif %}
+      <div class="rm-requirements-formset">
+        {% for form in installation_formset %}
+        <div class="rm-requirement-editor">
+          {{ form.id }} {% if form.errors %}
+          <div class="alert alert-danger mt-2">{{ form.errors }}</div>
+          {% endif %}
+          <div class="rm-form-grid rm-form-grid-2">
+            {% if show_location_name %}
+            <div class="rm-field">
+              <label for="{{ form.name.id_for_label }}">Location Name</label>
+              {{ form.name }}
+            </div>
+            {% endif %}
+            <div class="rm-field">
+              <label for="{{ form.sta.id_for_label }}">STA</label>
+              {{ form.sta }}
+            </div>
+            <div class="rm-field">
+              <label for="{{ form.bl.id_for_label }}">BL</label>
+              {{ form.bl }}
+            </div>
+            <div class="rm-field">
+              <label for="{{ form.wl.id_for_label }}">WL</label>
+              {{ form.wl }}
+            </div>
+            {% if show_location_name %}
+            <div class="rm-field rm-field-full">
+              <label for="{{ form.notes.id_for_label }}">Location Notes</label>
+              {{ form.notes }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="mt-4">
+            <h5>Drawing References</h5>
+            {% for install_id, drawing_formset in drawing_formsets %} {% if
+            install_id == form.instance.pk %} {{ drawing_formset.management_form
+            }} {% for dwg_form in drawing_formset %}
+            <div class="rm-requirement-editor mt-3">
+              {{ dwg_form.id }}
+              <div class="rm-form-grid rm-form-grid-2">
+                <div class="rm-field">
+                  <label>DWG</label>
+                  {{ dwg_form.dwg }}
+                </div>
+                <div class="rm-field">
+                  <label>Sheet</label>
+                  {{ dwg_form.sht }}
+                </div>
+                <div class="rm-field">
+                  <label>Revision</label>
+                  {{ dwg_form.rev }}
+                </div>
+                <div class="rm-field">
+                  <label>Note</label>
+                  {{ dwg_form.note }}
+                </div>
+              </div>
+              {% if dwg_form.DELETE %}
+              <div class="delete-row">
+                <label class="form-check-label">
+                  {{ dwg_form.DELETE }} Delete this drawing reference
+                </label>
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %} 
+            {% endfor %}
+          </div>
+          {% if form.DELETE and action != "Create" %}
+          <div class="delete-row">
+            <label
+              class="form-check-label"
+              for="{{ form.DELETE.id_for_label }}"
+            >
+              {{ form.DELETE }} Delete this install location
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-3">
+        <a
+          href="{% url 'add_install_location' part.pk %}"
+          class="btn btn-secondary"
+        >
+          + Add Another Install Location
+        </a>
+      </div>
+    </section>
+    <section class="rm-form-panel">
+      <div class="rm-panel-title">Installation Requirements</div>
+      {{ formset.management_form }} {% if formset.non_form_errors %}
+      <div class="alert alert-danger mt-3">{{ formset.non_form_errors }}</div>
+      {% endif %}
+      <div id="formset-container" class="rm-requirements-formset">
+        {% for form in formset %}
+        <div class="rm-requirement-editor">
+          {{ form.id }} {% if form.errors %}
+          <div class="alert alert-danger mt-2">{{ form.errors }}</div>
+          {% endif %}
+          <div class="rm-form-grid rm-form-grid-2">
+            <div class="rm-field">
+              <label for="{{ form.requirement_type.id_for_label }}"
+                >Requirement Type</label
+              >
+              {{ form.requirement_type|add_class:"form-select" }}
+            </div>
+            <div class="rm-field">
+              <label for="{{ form.note.id_for_label }}">Note</label>
+              {{ form.note|add_class:"form-control" }}
+            </div>
+          </div>
+          {% if action != "Create" %}
+          <div class="delete-row">
+            <label
+              class="form-check-label"
+              for="{{ form.DELETE.id_for_label }}"
+            >
+              {{ form.DELETE }} Delete this requirement
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    <div class="rm-form-actions">
+      <button type="submit" class="btn btn-primary">{{ action }}</button>
+      <a href="/" class="btn btn-secondary"> Cancel </a>
+    </div>
+  </form>
 </section>
-
-{% endblock %}
+{% if action == "Create" %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const locationContainer = document.getElementById(
+      "create-location-container",
+    );
+    const locationCountInput = document.getElementById("location_count");
+    const addLocationButton = document.getElementById("add-location-btn");
+    function showLocationNamesAndNotes() {
+      document
+        .querySelectorAll(".location-name-field")
+        .forEach(function (field) {
+          field.style.display = "";
+        });
+      document
+        .querySelectorAll(".location-notes-field")
+        .forEach(function (field) {
+          field.style.display = "";
+        });
+    }
+    function addDwgRow(locationIndex) {
+      const dwgContainer = document.querySelector(
+        '.dwg-container[data-location-index="' + locationIndex + '"]',
+      );
+      const dwgCountInput = document.getElementById(
+        "location_" + locationIndex + "_dwg_count",
+      );
+      const dwgIndex = parseInt(dwgCountInput.value, 10);
+      const row = document.createElement("div");
+      row.className = "rm-requirement-editor mt-3 create-dwg-row";
+      row.setAttribute("data-dwg-index", dwgIndex);
+      row.innerHTML =
+        '<div class="rm-form-grid rm-form-grid-2">' +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        "_dwg_" +
+        dwgIndex +
+        '">DWG</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        "_dwg_" +
+        dwgIndex +
+        '" id="location_' +
+        locationIndex +
+        "_dwg_" +
+        dwgIndex +
+        '" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        "_sht_" +
+        dwgIndex +
+        '">Sheet</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        "_sht_" +
+        dwgIndex +
+        '" id="location_' +
+        locationIndex +
+        "_sht_" +
+        dwgIndex +
+        '" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        "_rev_" +
+        dwgIndex +
+        '">Revision</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        "_rev_" +
+        dwgIndex +
+        '" id="location_' +
+        locationIndex +
+        "_rev_" +
+        dwgIndex +
+        '" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        "_dwg_note_" +
+        dwgIndex +
+        '">Note</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        "_dwg_note_" +
+        dwgIndex +
+        '" id="location_' +
+        locationIndex +
+        "_dwg_note_" +
+        dwgIndex +
+        '" class="form-control">' +
+        "</div>" +
+        "</div>";
+      dwgContainer.appendChild(row);
+      dwgCountInput.value = dwgIndex + 1;
+    }
+    document.addEventListener("click", function (event) {
+      if (event.target.classList.contains("add-dwg-btn")) {
+        const locationIndex = event.target.getAttribute("data-location-index");
+        addDwgRow(locationIndex);
+      }
+    });
+    addLocationButton.addEventListener("click", function () {
+      const locationIndex = parseInt(locationCountInput.value, 10);
+      showLocationNamesAndNotes();
+      const card = document.createElement("div");
+      card.className = "rm-requirement-editor create-location-card mt-3";
+      card.setAttribute("data-location-index", locationIndex);
+      card.innerHTML =
+        '<div class="rm-form-grid rm-form-grid-2">' +
+        '<div class="rm-field location-name-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_name">Location Name</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_name" id="location_' +
+        locationIndex +
+        '_name" class="form-control" value="LOCATION ' +
+        (locationIndex + 1) +
+        '">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_sta">STA</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_sta" id="location_' +
+        locationIndex +
+        '_sta" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_bl">BL</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_bl" id="location_' +
+        locationIndex +
+        '_bl" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_wl">WL</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_wl" id="location_' +
+        locationIndex +
+        '_wl" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field rm-field-full location-notes-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_notes">Location Notes</label>' +
+        '<textarea name="location_' +
+        locationIndex +
+        '_notes" id="location_' +
+        locationIndex +
+        '_notes" class="form-control" rows="2"></textarea>' +
+        "</div>" +
+        "</div>" +
+        '<div class="mt-4">' +
+        "<h5>Drawing References</h5>" +
+        '<input type="hidden" name="location_' +
+        locationIndex +
+        '_dwg_count" id="location_' +
+        locationIndex +
+        '_dwg_count" value="1">' +
+        '<div class="dwg-container" data-location-index="' +
+        locationIndex +
+        '">' +
+        '<div class="rm-requirement-editor mt-3 create-dwg-row" data-dwg-index="0">' +
+        '<div class="rm-form-grid rm-form-grid-2">' +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_dwg_0">DWG</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_dwg_0" id="location_' +
+        locationIndex +
+        '_dwg_0" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_sht_0">Sheet</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_sht_0" id="location_' +
+        locationIndex +
+        '_sht_0" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_rev_0">Revision</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_rev_0" id="location_' +
+        locationIndex +
+        '_rev_0" class="form-control">' +
+        "</div>" +
+        '<div class="rm-field">' +
+        '<label for="location_' +
+        locationIndex +
+        '_dwg_note_0">Note</label>' +
+        '<input type="text" name="location_' +
+        locationIndex +
+        '_dwg_note_0" id="location_' +
+        locationIndex +
+        '_dwg_note_0" class="form-control">' +
+        "</div>" +
+        "</div>" +
+        "</div>" +
+        "</div>" +
+        '<div class="mt-3">' +
+        '<button type="button" class="btn btn-secondary add-dwg-btn" data-location-index="' +
+        locationIndex +
+        '">' +
+        "+ Add Additional DWG Ref" +
+        "</button>" +
+        "</div>" +
+        "</div>";
+      locationContainer.appendChild(card);
+      locationCountInput.value = locationIndex + 1;
+    });
+  });
+</script>
+{% endif %} {% endblock %}

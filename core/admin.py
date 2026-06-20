@@ -26,8 +26,8 @@ class OracleImportForm(forms.Form):
 
 @admin.register(Part)
 class PartAdmin(admin.ModelAdmin):
-    list_display = ("part_number", "description", "rev", "dwg", "sht")
-    search_fields = ("part_number", "description", "dwg")
+    list_display = ("part_number", "description")
+    search_fields = ("part_number", "description")
     
     change_list_template = "admin/core/part/change_list.html"
 

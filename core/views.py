@@ -240,12 +240,25 @@ def edit_part(request, pk):
 
 
 def add_install_location(request, pk):
-    part = get_object_or_404(Part, pk=pk)
-    location_count = part.installations.count() + 1
-    PartInstallation.objects.create(
-        part=part, name=f"LOCATION {location_count}", sta="", bl="", wl="", notes=""
+   part = get_object_or_404(Part, pk=pk)
+   location_count = part.installations.count() + 1
+   installation = PartInstallation.objects.create(
+       part=part,
+       name=f"LOCATION {location_count}",
+       sta="",
+       bl="",
+       wl="",
+       notes="",
+   )
+   DrawingReference.objects.create(
+       installation=installation,
+       dwg="",
+       sht="",
+       rev="",
+       note="",
     )
-    return redirect("edit_part", pk=part.pk)
+   return redirect("edit_part", pk=part.pk)
+
 
 
 def delete_part(request, pk):

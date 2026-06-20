@@ -49,78 +49,24 @@ class PartQuerySet(models.QuerySet):
            )
        )
 
-
 class Part(models.Model):
-    objects = PartQuerySet.as_manager()
-    id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    part_number = models.CharField(max_length=15, primary_key=True)
-    description = models.TextField(max_length=60, blank=False)
-    sta = models.CharField(max_length=4, blank=False)
-    bl = models.CharField(max_length=4, blank=False)
-    wl = models.CharField(max_length=5, blank=False)
-    dwg = models.CharField(max_length=20, blank=False)
-    sht = models.CharField(max_length=4, blank=False)
-    rev = models.CharField(max_length=3, blank=False)
-    notes = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.part_number
-
-    def save(self, *args, **kwargs):
-        # Normalize key fields to uppercase on every save
-        uppercase_fields = [
-            "part_number",
-            "description",
-            "sta",
-            "bl",
-            "wl",
-            "dwg",
-            "sht",
-            "rev",
-        ]
-        for field in uppercase_fields:
-            value = getattr(self, field, None)
-            if isinstance(value, str) and value:
-                setattr(self, field, value.strip().upper())
-        super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-       # Normalize key fields to uppercase on every save
+   objects = PartQuerySet.as_manager()
+   id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+   part_number = models.CharField(max_length=15, primary_key=True)
+   description = models.TextField(max_length=60, blank=False)
+   notes = models.TextField(blank=True)
+   def __str__(self):
+       return self.part_number
+   def save(self, *args, **kwargs):
        uppercase_fields = [
            "part_number",
            "description",
-           "sta",
-           "bl",
-           "wl",
-           "dwg",
-           "sht",
-           "rev",
        ]
        for field in uppercase_fields:
            value = getattr(self, field, None)
            if isinstance(value, str) and value:
                setattr(self, field, value.strip().upper())
        super().save(*args, **kwargs)
-       self.ensure_default_installation()
-       
-    def ensure_default_installation(self):
-       installation, created = PartInstallation.objects.get_or_create(
-           part=self,
-           name="DEFAULT",
-           defaults={
-               "sta": self.sta or "",
-               "bl": self.bl or "",
-               "wl": self.wl or "",
-           }
-       )
-       if self.dwg:
-           DrawingReference.objects.get_or_create(
-               installation=installation,
-               dwg=self.dwg,
-               sht=self.sht or "",
-               rev=self.rev or "",
-           )
-       return installation
 
 class PartInstallation(models.Model):
    part = models.ForeignKey(
